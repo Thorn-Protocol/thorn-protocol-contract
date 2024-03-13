@@ -1,1 +1,1 @@
-# thorns-protocol-contract
+# thorn-protocol-contract
