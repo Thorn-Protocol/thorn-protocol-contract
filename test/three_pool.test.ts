@@ -84,7 +84,7 @@ async function get_add_liquidity_fee(){
 }
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-transferOwnerShip().catch((error) => {
+getPair().catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

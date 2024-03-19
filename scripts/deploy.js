@@ -3,10 +3,10 @@ const { writeToEnvFile } = require("./utils/helper");
 
 async function main() {
 
-    const mockTokenFactory = await ethers.getContractFactory("MockToken");
-    const mockTokenContract = await mockTokenFactory.deploy();
-    console.log(`Contract deployed to address: ${mockTokenContract.target}`);
-    writeToEnvFile("TOKEN_A", mockTokenContract.target);
+    // const mockTokenFactory = await ethers.getContractFactory("MockToken");
+    // const mockTokenContract = await mockTokenFactory.deploy();
+    // console.log(`Contract deployed to address: ${mockTokenContract.target}`);
+    // writeToEnvFile("TOKEN_A", mockTokenContract.target);
 
     // const stableSwapInfoFactory = await ethers.getContractFactory("StableSwapInfo");
     // const stableSwapInfoContract = await stableSwapInfoFactory.deploy(
@@ -74,7 +74,17 @@ async function main() {
     // const StableSwapRouterContract =await StableSwapRouterFactory.deploy(process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO);
     // console.log(`Contract deployed to address: ${StableSwapRouterContract.target}`);
     // writeToEnvFile("STABLE_SWAP_ROUTER", StableSwapRouterContract.target);
+
+
+    const DepositMetaFactory=await ethers.getContractFactory("DepositMeta")
+    const  DepositMetaContract=await DepositMetaFactory.deploy(
+      process.env.STABLE_SWAP_THREE_POOL,process.env.LP_THREE_POOL
+    )
+        console.log(`Contract deployed to address: ${DepositMetaContract.target}`);
+    writeToEnvFile("DEPOSIT_META", DepositMetaContract.target);
 }
+
+
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
