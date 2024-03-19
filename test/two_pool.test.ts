@@ -108,7 +108,7 @@ async function get_admin_balances(){
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-get_balances().catch((error) => {
+getPair().catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });
