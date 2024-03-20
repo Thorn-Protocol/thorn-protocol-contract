@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import '../../interfaces/IStableSwap.sol';
+import '../../interfaces/IThreePoolStableSwap.sol';
 import '../../interfaces/IStableSwapLP.sol';
 
-contract StableMetaPool is ReentrancyGuard {
+contract SwapMeta is ReentrancyGuard {
     using SafeMath for uint256;
 
     // Constants
@@ -142,10 +142,10 @@ contract StableMetaPool is ReentrancyGuard {
         token = IStableSwapLP(_pool_token);
 
         base_pool = _base_pool;
-        base_virtual_price = IStableSwap(_base_pool).get_virtual_price();
+        base_virtual_price = IThreePoolStableSwap(_base_pool).get_virtual_price();
         base_cache_updated = block.timestamp;
         for (uint256 i = 0; i < BASE_N_COINS; i++) {
-            address _base_coin = IStableSwap(_base_pool).coins(i);
+            address _base_coin = IThreePoolStableSwap(_base_pool).coins(i);
             base_coins[i] = _base_coin;
 
             // approve underlying coins for infinite transfers
@@ -204,7 +204,7 @@ contract StableMetaPool is ReentrancyGuard {
 
     function _vp_rate() internal returns (uint256) { //bỏ view
         if (block.timestamp > base_cache_updated + BASE_CACHE_EXPIRES) {
-            uint256 vprice = IStableSwap(base_pool).get_virtual_price();
+            uint256 vprice = IThreePoolStableSwap(base_pool).get_virtual_price();
             base_virtual_price = vprice;
             base_cache_updated = block.timestamp;
             return vprice;
@@ -215,7 +215,7 @@ contract StableMetaPool is ReentrancyGuard {
 
     function _vp_rate_ro() internal view returns (uint256) {
         if (block.timestamp > base_cache_updated + BASE_CACHE_EXPIRES) {
-            return IStableSwap(base_pool).get_virtual_price();
+            return IThreePoolStableSwap(base_pool).get_virtual_price();
         } else {
             return base_virtual_price;
         }
@@ -469,11 +469,11 @@ contract StableMetaPool is ReentrancyGuard {
             if (base_j < 0) {
                 uint256[BASE_N_COINS] memory base_inputs; 
                 base_inputs[uint256(base_i)] = dx;
-                x = IStableSwap(_base_pool).calc_token_amount(base_inputs, true) * vp_rate / PRECISION;
-                x -= x * IStableSwap(_base_pool).fee() / (2 * FEE_DENOMINATOR);
+                x = IThreePoolStableSwap(_base_pool).calc_token_amount(base_inputs, true) * vp_rate / PRECISION;
+                x -= x * IThreePoolStableSwap(_base_pool).fee() / (2 * FEE_DENOMINATOR);
                 x += xp[MAX_COIN];
             } else {
-                return IStableSwap(_base_pool).get_dy(base_i, base_j, dx);
+                return IThreePoolStableSwap(_base_pool).get_dy(base_i, base_j, dx);
             }
         }
 
@@ -484,7 +484,7 @@ contract StableMetaPool is ReentrancyGuard {
         if (base_j < 0) {
             dy /= precisions[uint256(meta_j)];
         } else {
-            dy = IStableSwap(_base_pool).calc_withdraw_one_coin(dy * PRECISION / vp_rate, base_j);
+            dy = IThreePoolStableSwap(_base_pool).calc_withdraw_one_coin(dy * PRECISION / vp_rate, base_j);
         }
 
         return dy;
@@ -688,14 +688,14 @@ contract StableMetaPool is ReentrancyGuard {
         dy = exchange_underlying_calculation(i - MAX_COIN, (i - MAX_COIN < 0) ? i : MAX_COIN, (j - MAX_COIN < 0) ? j : MAX_COIN, dx_w_fee);
         // Withdraw from the base pool if needed
         if (j - MAX_COIN >= 0) {
-            IStableSwap(base_pool).remove_liquidity_one_coin(dy, j - MAX_COIN, 0);
+            IThreePoolStableSwap(base_pool).remove_liquidity_one_coin(dy, j - MAX_COIN, 0);
             dy = ERC20(output_coin).balanceOf(address(this)) - ERC20(output_coin).balanceOf(address(this));
         }
 
         require(dy >= min_dy, "Too few coins in result");
     } else {
         dy = ERC20(output_coin).balanceOf(address(this));
-        IStableSwap(base_pool).exchange(i - MAX_COIN, j - MAX_COIN, dx_w_fee, min_dy);
+        IThreePoolStableSwap(base_pool).exchange(i - MAX_COIN, j - MAX_COIN, dx_w_fee, min_dy);
         dy = ERC20(output_coin).balanceOf(address(this)) - dy;
     }
 
@@ -730,7 +730,7 @@ contract StableMetaPool is ReentrancyGuard {
             address coin_i = coins[MAX_COIN];
             // Deposit and measure delta
             x = ERC20(coin_i).balanceOf(address(this));
-            IStableSwap(base_pool).add_liquidity(base_inputs, 0);
+            IThreePoolStableSwap(base_pool).add_liquidity(base_inputs, 0);
             // Need to convert pool token to "virtual" units using rates
             // dx is also different now
             dx_w_fee = ERC20(coin_i).balanceOf(address(this)) - x;

@@ -31,7 +31,6 @@ async function getPair(){
     const factory= await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY);
     const pair= await factory.getThreePoolPairInfo(process.env.TOKEN_A, process.env.TOKEN_B)
     console.log(pair);
-
 }
 
 async function addLiquidity(){
@@ -84,7 +83,7 @@ async function get_add_liquidity_fee(){
 }
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-transferOwnerShip().catch((error) => {
+getPair().catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

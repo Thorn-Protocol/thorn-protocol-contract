@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-interface IStableSwap {
+interface IThreePoolStableSwap {
 
     function token() external view returns (address);
 
@@ -21,7 +21,7 @@ interface IStableSwap {
 
     function A() external view returns (uint256);
 
-    function get_D_mem(uint256[2] memory _balances, uint256 amp) external view returns (uint256);
+    function get_D_mem(uint256[3] memory _balances, uint256 amp) external view returns (uint256);
 
     function base_pool() external view returns (address);
 
@@ -29,7 +29,7 @@ interface IStableSwap {
         uint256 i,
         uint256 j,
         uint256 x,
-        uint256[2] memory xp_
+        uint256[3] memory xp_
     ) external view returns (uint256);
 
      // solium-disable-next-line mixedcase
@@ -41,7 +41,7 @@ interface IStableSwap {
 
     function calc_withdraw_one_coin(uint256 _token_amount, uint256 i) external view returns (uint256);
 
-    function add_liquidity(uint256[2] memory amounts, uint256 min_mint_amount) external payable;
+    function add_liquidity(uint256[3] memory amounts, uint256 min_mint_amount) external payable;
 
      // solium-disable-next-line mixedcase
     function exchange(
@@ -51,11 +51,13 @@ interface IStableSwap {
         uint256 minDy
     ) external payable;
 
-    function remove_liquidity(uint256 _amount, uint256[2] memory min_amounts) external;
+    function remove_liquidity(uint256 _amount, uint256[3] memory min_amounts) external;
 
-    function remove_liquidity_imbalance(uint256[2] memory amounts, uint256 max_burn_amount) external;
+    function remove_liquidity_imbalance(uint256[3] memory amounts, uint256 max_burn_amount) external;
 
-    function calc_token_amount(uint256[2] memory amounts, bool deposit) external view returns (uint256);
+    function calc_token_amount(uint256[3] memory amounts, bool deposit) external view returns (uint256);
     
     function remove_liquidity_one_coin(uint256 _token_amount,uint256 i,uint256 min_amount) external ;
+
+    function get_virtual_price() external view returns (uint256);
 }

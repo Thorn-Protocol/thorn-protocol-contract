@@ -3,10 +3,10 @@ const { writeToEnvFile } = require("./utils/helper");
 
 async function main() {
 
-    // const mockTokenFactory = await ethers.getContractFactory("MockToken");
+    // const mockTokenFactory = await ethers.getContractFactory("StableSwapLP");
     // const mockTokenContract = await mockTokenFactory.deploy();
-    // console.log(`Contract deployed to address: ${mockTokenContract.target}`);
-    // writeToEnvFile("TOKEN_A", mockTokenContract.target);
+    // console.log(`Contract deployed to address: ${mockTokenContract.address}`);
+    // writeToEnvFile("POOL_TOKEN", mockTokenContract.address);
 
     // const stableSwapInfoFactory = await ethers.getContractFactory("StableSwapInfo");
     // const stableSwapInfoContract = await stableSwapInfoFactory.deploy(
@@ -75,10 +75,28 @@ async function main() {
     // console.log(`Contract deployed to address: ${StableSwapRouterContract.target}`);
     // writeToEnvFile("STABLE_SWAP_ROUTER", StableSwapRouterContract.target);
 
-    const StableMetaPoolFactory=await ethers.getContractFactory("StableMetaPool");
-    const StableMetaPoolContract=await StableMetaPoolFactory.deploy();
-    console.log(`Contract deployed to address: ${StableMetaPoolContract.target}`);
-    writeToEnvFile("STABLE_META_POOL",StableMetaPoolContract.target);
+    const SwapMetaFactory = await ethers.getContractFactory("SwapMeta");
+    const SwapMetaContract = await SwapMetaFactory.deploy(
+      process.env.PUBLIC_KEY,
+      [process.env.STB_TOKEN, process.env.LP_TOKEN],
+      process.env.POOL_TOKEN,
+      process.env.BASE_POOL,
+      1000,
+      4000000,
+      5000000000,
+      {gasLimit:1e7, gasPrice:100e9}
+    );
+    console.log(`Contract deployed to address: ${SwapMetaContract.address}`);
+    writeToEnvFile("SWAP_META", SwapMetaContract.address);
+
+    const DepositMetaFactory=await ethers.getContractFactory("DepositMeta")
+    const  DepositMetaContract=await DepositMetaFactory.deploy(
+      process.env.SWAP_META,
+      process.env.POOL_TOKEN,
+      {gasLimit:1e7, gasPrice:100e9}
+    )
+    console.log(`Contract deployed to address: ${DepositMetaContract.address}`);
+    writeToEnvFile("DEPOSIT_META", DepositMetaContract.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

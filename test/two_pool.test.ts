@@ -106,6 +106,11 @@ async function get_admin_balances(){
     console.log(tx);
 }
 
+async function getCoins(){
+    const factory= await ethers.getContractAt("StableSwapTwoPool","0x9EAF48899C30920Ff15B6e231bAB56c0a019c33a");
+    console.log(await factory.coins(0));
+}
+
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 getPair().catch((error) => {
