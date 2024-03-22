@@ -5,6 +5,7 @@ import { ERC20, StableSwapFactory } from "../typechain-types";
 dotenv.config();
 
 describe("StableSwapFactory Contract Tests", function () {
+    this.timeout(150000);
     let factory: StableSwapFactory;
     let tokenA: ERC20;
     let tokenB: ERC20;
@@ -33,14 +34,15 @@ describe("StableSwapFactory Contract Tests", function () {
     //         process.env.TOKEN_C,
     //         1000,
     //         4000000,
-    //         5000000000
+    //         5000000000,
+    //         {gasLimit:1e7, gasPrice:100e9}
     //     )
     //     await tx.wait();
     //     console.log(tx);
     // });
 
     // it("should retrieve 3pool pair information", async function () {
-    //     const pair= await factory.getThreePoolPairInfo(process.env.TOKEN_A, process.env.TOKEN_B)
+    //     const pair= await factory.getThreePoolPairInfo(process.env.TOKEN_A, process.env.TOKEN_C)
     //     console.log(pair);
     // });
 
@@ -52,14 +54,14 @@ describe("StableSwapFactory Contract Tests", function () {
     //     // console.log(await tokenB.balanceOf(process.env.PUBLIC_KEY));
     //     // console.log(await tokenC.balanceOf(process.env.PUBLIC_KEY));
 
-    //     let tx=await tokenA.approve(threePairInfo[0],1e8)
+    //     let tx=await tokenA.approve(threePairInfo[0],1e6)
     //     await  tx.wait();
-    //     let tx1=await tokenB.approve(threePairInfo[0],1e8)
+    //     let tx1=await tokenB.approve(threePairInfo[0],1e6)
     //     await  tx1.wait();
-    //     let tx2=await tokenC.approve(threePairInfo[0],1e8)
+    //     let tx2=await tokenC.approve(threePairInfo[0],1e6)
     //     await  tx2.wait();
 
-    //     const tx3=await StableSwapThreePool.add_liquidity([1e8, 1e8, 1e8], 0)
+    //     const tx3=await StableSwapThreePool.add_liquidity([1e6, 1e6, 1e6], 0)
     //     await tx3.wait();
     //     console.log(tx3);
     // });
@@ -83,14 +85,14 @@ describe("StableSwapFactory Contract Tests", function () {
     //     console.log(tx);
     // });
 
-    it("should remove liquidity from 3pool", async function () {
-        const threePairInfo = await factory.getThreePoolPairInfo(process.env.TOKEN_A, process.env.TOKEN_B)
-        const StableSwapThreePool=await  ethers.getContractAt("StableSwapThreePool", threePairInfo[0]);
-        // const lptoken = await ethers.getContractAt("ERC20", threePairInfo[4]);
-        // console.log(await lptoken.balanceOf(process.env.PUBLIC_KEY));
-        const pair=await StableSwapThreePool.remove_liquidity(1e6, [0,0,0]);
-        await pair.wait();
-        console.log(pair);
-    });
+    // it("should remove liquidity from 3pool", async function () {
+    //     const threePairInfo = await factory.getThreePoolPairInfo(process.env.TOKEN_A, process.env.TOKEN_B)
+    //     const StableSwapThreePool=await  ethers.getContractAt("StableSwapThreePool", threePairInfo[0]);
+    //     // const lptoken = await ethers.getContractAt("ERC20", threePairInfo[4]);
+    //     // console.log(await lptoken.balanceOf(process.env.PUBLIC_KEY));
+    //     const pair=await StableSwapThreePool.remove_liquidity(1e6, [0,0,0]);
+    //     await pair.wait();
+    //     console.log(pair);
+    // });
 
 });

@@ -7,6 +7,7 @@ dotenv.config();
 const ROSEAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 describe("StableSwapFactory Contract Tests", function () {
+    this.timeout(150000);
     let factory: StableSwapFactory;
     let tokenA: ERC20;
     let tokenB: ERC20;

@@ -6,6 +6,7 @@ import { StableSwapLP } from "../../typechain-types";
 dotenv.config();
 
 describe("DepositMeta Contract Tests", function () {
+    this.timeout(150000);
     let depositMeta: DepositMeta;
     let tokenA: ERC20;
     let tokenB: ERC20;
@@ -36,24 +37,24 @@ describe("DepositMeta Contract Tests", function () {
     //     console.log(tx4);
     // });
 
-    // it("should remove liquidity", async function () {
-    // //    console.log(await poolToken.balanceOf(process.env.PUBLIC_KEY));
+    it("should remove liquidity", async function () {
+       console.log(await poolToken.balanceOf(process.env.PUBLIC_KEY));
+        // let tx1=await poolToken.approve(process.env.DEPOSIT_META,399933)
+        // await tx1.wait();
+
+        // let tx=await depositMeta.remove_liquidity(399933,[0,0,0,0]);
+        // await tx.wait();
+        // console.log(tx);
+    });
+
+    // it("should remove liquidity for one coin", async function () {
     //     let tx1=await poolToken.approve(process.env.DEPOSIT_META,1e5)
     //     await tx1.wait();
 
-    //     let tx=await depositMeta.remove_liquidity(1e5,[0,0,0,0]);
+    //     let tx=await depositMeta.remove_liquidity_one_coin(1e5,2,0); 
     //     await tx.wait();
     //     console.log(tx);
     // });
-
-    it("should remove liquidity for one coin", async function () {
-        let tx1=await poolToken.approve(process.env.DEPOSIT_META,1e5)
-        await tx1.wait();
-
-        let tx=await depositMeta.remove_liquidity_one_coin(1e5,2,0); 
-        await tx.wait();
-        console.log(tx);
-    });
 
     // it("should calculate withdrawable amount for one coin", async function () {
     //     let tx=await depositMeta.calc_withdraw_one_coin(1e8,0);

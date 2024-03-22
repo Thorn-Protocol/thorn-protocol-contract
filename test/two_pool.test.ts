@@ -5,6 +5,7 @@ import { ERC20, StableSwapFactory } from "../typechain-types";
 dotenv.config();
 
 describe("StableSwapTwoPool Contract Tests", function () {
+    this.timeout(150000);
     let factory: StableSwapFactory;
     let tokenA: ERC20;
     let tokenC: ERC20;

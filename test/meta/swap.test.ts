@@ -4,6 +4,7 @@ import { ERC20, StableSwapLP, SwapMeta } from "../../typechain-types";
 dotenv.config();
 
 describe("SwapMeta Contract Tests", function () {
+    this.timeout(150000);
     let swapMeta: SwapMeta;
     let stbToken: ERC20;
     let lpToken: ERC20;
@@ -17,28 +18,31 @@ describe("SwapMeta Contract Tests", function () {
     });
 
     // it("should add liquidity", async function () {
-    //     // console.log(await stbToken.balanceOf(process.env.PUBLIC_KEY));
-    //     // console.log(await lpToken.balanceOf(process.env.PUBLIC_KEY));
+    //     console.log(await stbToken.balanceOf(process.env.PUBLIC_KEY));
+    //     console.log(await lpToken.balanceOf(process.env.PUBLIC_KEY));
         
 
-    //     let tx = await poolToken.setMinter(process.env.SWAP_META);
-    //     await tx.wait();
+    //     // let tx = await poolToken.setMinter(process.env.SWAP_META);
+    //     // await tx.wait();
+
+    //     // console.log(await poolToken.minter());
+        
     
-    //     let tx1 = await stbToken.approve(process.env.SWAP_META,1e6)
+    //     let tx1 = await stbToken.approve(process.env.SWAP_META,1e3)
     //     await tx1.wait();
     //     let tx2 = await lpToken.approve(process.env.SWAP_META,1e6)
     //     await tx2.wait();
     
-    //     let tx3 = await swapMeta.add_liquidity([1e6,1e6],0);
+    //     let tx3 = await swapMeta.add_liquidity([1e3,1e6],0);
     //     await tx3.wait();
     //     console.log(tx3);  
     // });
 
     // it("should exchange tokens", async function () {
-    //     let tx= await stbToken.approve(process.env.SWAP_META,1000)
+    //     let tx= await stbToken.approve(process.env.SWAP_META,100)
     //     await tx.wait();
 
-    //     let tx1=await swapMeta.exchange(0,1,1000,0)
+    //     let tx1=await swapMeta.exchange(0,1,100,0)
     //     await tx1.wait();
     //     console.log(tx1);
     // });
@@ -55,10 +59,10 @@ describe("SwapMeta Contract Tests", function () {
     // it("should remove liquidity", async function () {
 
     //     // console.log(await poolToken.balanceOf(process.env.PUBLIC_KEY));
-    //     let tx=await poolToken.approve(process.env.SWAP_META,1e6)
+    //     let tx=await poolToken.approve(process.env.SWAP_META,907906)
     //     await tx.wait();
 
-    //     const tx1 =await swapMeta.remove_liquidity(1e6, [0,0]);
+    //     const tx1 =await swapMeta.remove_liquidity(907906, [0,0]);
     //     await tx1.wait();
     //     console.log(tx1);
     // });

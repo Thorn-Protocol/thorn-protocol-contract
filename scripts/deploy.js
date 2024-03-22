@@ -89,14 +89,14 @@ async function main() {
     // console.log(`Contract deployed to address: ${SwapMetaContract.address}`);
     // writeToEnvFile("SWAP_META", SwapMetaContract.address);
 
-    // const DepositMetaFactory=await ethers.getContractFactory("DepositMeta")
-    // const  DepositMetaContract=await DepositMetaFactory.deploy(
-    //   process.env.SWAP_META,
-    //   process.env.POOL_TOKEN,
-    //   // {gasLimit:1e7, gasPrice:100e9}
-    // )
-    // console.log(`Contract deployed to address: ${DepositMetaContract.address}`);
-    // writeToEnvFile("DEPOSIT_META", DepositMetaContract.address);
+    const DepositMetaFactory=await ethers.getContractFactory("DepositMeta")
+    const  DepositMetaContract=await DepositMetaFactory.deploy(
+      process.env.SWAP_META,
+      process.env.POOL_TOKEN,
+      // {gasLimit:1e7, gasPrice:100e9}
+    )
+    console.log(`Contract deployed to address: ${DepositMetaContract.address}`);
+    writeToEnvFile("DEPOSIT_META", DepositMetaContract.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

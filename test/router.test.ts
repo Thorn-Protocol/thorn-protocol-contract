@@ -5,6 +5,7 @@ import { ERC20, StableSwapFactory, StableSwapRouter, StableSwapTwoPoolInfo } fro
 dotenv.config();
 
 describe("StableSwapRouter Contract Tests", function () {
+    this.timeout(150000);
     let contract: StableSwapRouter;
     let tokenA: ERC20;
     let StableSwapFactory: StableSwapFactory;
