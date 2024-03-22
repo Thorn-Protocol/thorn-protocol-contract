@@ -1,70 +1,71 @@
 import { ethers } from "hardhat";
+import { expect } from "chai";
 import * as dotenv from "dotenv";
+import { ERC20, StableSwapFactory } from "../typechain-types";
 dotenv.config();
 
 const ROSEAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-async function transferOwnerShip(){
-    // const factory =await  ethers.getContractAt("StableSwapLPFactory", process.env.STABLE_SWAP_LP_FACTORY);
-    // const factory =await  ethers.getContractAt("StableSwapTwoPoolDeployer", process.env.STABLE_SWAP_TWO_POOL_DEPLOYER);
-    const factory =await  ethers.getContractAt("StableSwapThreePoolDeployer", process.env.STABLE_SWAP_THREE_POOL_DEPLOYER!);
-    let tx = await factory.transferOwnership(process.env.STABLE_SWAP_FACTORY);
-    await tx.wait();
-    console.log(tx);
-}
+describe("StableSwapFactory Contract Tests", function () {
+    let factory: StableSwapFactory;
+    let tokenA: ERC20;
+    let tokenB: ERC20;
 
-async function createPair(){
-    const factory=await  ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY! );
-    const pair=await  factory.createSwapPair(
-        ROSEAddress,
-        process.env.WROSE,
-        200,
-        4000000,
-        5000000000
-    )
-    await pair.wait();
-    console.log(pair);
+    before(async function () {
+        factory = await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY!);
+        tokenA = await ethers.getContractAt("ERC20", ROSEAddress);
+        tokenB = await ethers.getContractAt("ERC20", process.env.WROSE!);
+    });
 
-}
-async function getPair(){
-    const factory= await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY!);
-    const pair= await factory.getPairInfo(ROSEAddress, process.env.WROSE)
-    console.log(pair);
+    it("should transfer ownership", async function () {
+        // const StableSwapLPFactory =await  ethers.getContractAt("StableSwapLPFactory", process.env.STABLE_SWAP_LP_FACTORY);
+        // const StableSwapTwoPoolDeployer =await  ethers.getContractAt("StableSwapTwoPoolDeployer", process.env.STABLE_SWAP_TWO_POOL_DEPLOYER);
+        const StableSwapThreePoolDeployer =await  ethers.getContractAt("StableSwapThreePoolDeployer", process.env.STABLE_SWAP_THREE_POOL_DEPLOYER!);
+        let tx = await StableSwapThreePoolDeployer.transferOwnership(process.env.STABLE_SWAP_FACTORY);
+        await tx.wait();
+        console.log(tx);
+    });
 
-}
+    it("should create pair", async function () {
+        const tx=await factory.createSwapPair(
+            ROSEAddress,
+            process.env.WROSE,
+            200,
+            4000000,
+            5000000000
+        )
+        await tx.wait();
+        console.log(tx);
+    });
 
-async function addLiquidity(){
-    const StableSwapFactory= await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY!);
-    const pairInfo = await StableSwapFactory.getPairInfo(ROSEAddress, process.env.WROSE)
-    const factory=await  ethers.getContractAt("StableSwapTwoPool", pairInfo[0]);
-    const tokenA =await ethers.getContractAt("ERC20", ROSEAddress);
-    const tokenB= await ethers.getContractAt("ERC20", process.env.WROSE!);
-    let tx=await tokenA.approve(pairInfo[0],1e8)
-    await  tx.wait();
-    let tx1=await tokenB.approve(pairInfo[0],1e8)
-    await  tx1.wait();
+    it("should retrieve pair information", async function () {
+        const pair= await factory.getPairInfo(ROSEAddress, process.env.WROSE)
+        console.log(pair);
+    });
 
-    const pair=await factory.add_liquidity([1e8, 1e8], 2e8)
-    await pair.wait();
-    console.log(pair);
-}
+    it("should add liquidity", async function () {
+        const pairInfo = await factory.getPairInfo(ROSEAddress, process.env.WROSE)
+        const StableSwapTwoPool = await  ethers.getContractAt("StableSwapTwoPool", pairInfo[0]);
+        
+        let tx=await tokenA.approve(pairInfo[0],1e8)
+        await  tx.wait();
+        let tx1=await tokenB.approve(pairInfo[0],1e8)
+        await  tx1.wait();
+    
+        const tx2=await StableSwapTwoPool.add_liquidity([1e8, 1e8], 2e8)
+        await tx2.wait();
+        console.log(tx2);
+    });
 
-async function exchange(){
-    const StableSwapFactory= await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY!);
-    const pairInfo = await StableSwapFactory.getPairInfo(ROSEAddress, process.env.WROSE)
-    const factory=await  ethers.getContractAt("StableSwapTwoPool", pairInfo[0]);
-    const tokenA =await ethers.getContractAt("ERC20", process.env.WROSE!);
-    let tx=await tokenA.approve(pairInfo[0],1e8)
-    await  tx.wait();
-    const pair=await factory.exchange(0,1,1e5,0)
-    await pair.wait();
-    console.log(pair);
-}
+    it("should perform token exchange", async function () {
+        const pairInfo = await factory.getPairInfo(ROSEAddress, process.env.WROSE)
+        const StableSwapTwoPool =await  ethers.getContractAt("StableSwapTwoPool", pairInfo[0]);
+        
+        let tx=await tokenA.approve(pairInfo[0],1e8)
+        await  tx.wait();
 
-
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-addLiquidity().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+        const tx1=await StableSwapTwoPool.exchange(0,1,1e5,0)
+        await tx1.wait();
+        console.log(tx1);
+    });
 });

@@ -12,7 +12,7 @@ contract DepositMeta{
     uint256 constant FEE_DENOMINATOR = 10**10;
     uint256 constant FEE_IMPRECISION = 100 * 10**8; // % of the fee
 
-    uint256 constant MAX_COIN = 10; // Define your value
+    uint256 constant MAX_COIN = N_COINS -1; // Define your value
     uint256 constant N_COINS =2 ; // Define your value
     uint256 constant BASE_N_COINS = 3; // Define your value
     uint256 constant N_ALL_COINS = N_COINS + BASE_N_COINS - 1;
@@ -249,15 +249,6 @@ contract DepositMeta{
 
         return IMetaStableSwap(pool).calc_token_amount(meta_amounts, _is_deposit);
     }
-
-
-
-
-
-
-
-
-
 }
 
 

@@ -1,69 +1,71 @@
 import { ethers } from "hardhat";
 import * as dotenv from "dotenv";
-import { loadingButtonClasses } from "@mui/lab";
+import { ERC20, StableSwapLP, SwapMeta } from "../../typechain-types";
 dotenv.config();
 
+describe("SwapMeta Contract Tests", function () {
+    let swapMeta: SwapMeta;
+    let stbToken: ERC20;
+    let lpToken: ERC20;
+    let poolToken: StableSwapLP;
 
+    before(async function () {
+        swapMeta = await ethers.getContractAt("SwapMeta", process.env.SWAP_META);
+        stbToken = await ethers.getContractAt("ERC20", process.env.STB_TOKEN);
+        lpToken = await ethers.getContractAt("ERC20", process.env.LP_TOKEN);
+        poolToken = await ethers.getContractAt("StableSwapLP", process.env.POOL_TOKEN);
+    });
 
-async function addLiquidity(){
-    const swapMeta=await ethers.getContractAt("SwapMeta",process.env.SWAP_META);
-    console.log(swapMeta);
+    // it("should add liquidity", async function () {
+    //     // console.log(await stbToken.balanceOf(process.env.PUBLIC_KEY));
+    //     // console.log(await lpToken.balanceOf(process.env.PUBLIC_KEY));
+        
 
-    let tx = await swapMeta.A();
-    console.log(tx);
+    //     let tx = await poolToken.setMinter(process.env.SWAP_META);
+    //     await tx.wait();
     
+    //     let tx1 = await stbToken.approve(process.env.SWAP_META,1e6)
+    //     await tx1.wait();
+    //     let tx2 = await lpToken.approve(process.env.SWAP_META,1e6)
+    //     await tx2.wait();
     
-    // const stbToken =await ethers.getContractAt("ERC20", process.env.STB_TOKEN);
-    // const lpToken = await ethers.getContractAt("ERC20", process.env.LP_TOKEN);
+    //     let tx3 = await swapMeta.add_liquidity([1e6,1e6],0);
+    //     await tx3.wait();
+    //     console.log(tx3);  
+    // });
 
-    // let tx=await stbToken.approve(process.env.SWAP_META,1000000000000000000n)
-    // await  tx.wait();
-    // let tx1=await lpToken.approve(process.env.SWAP_META,1000000000000000000n)
-    // await  tx1.wait();
+    // it("should exchange tokens", async function () {
+    //     let tx= await stbToken.approve(process.env.SWAP_META,1000)
+    //     await tx.wait();
 
-    // let tx2=await swapMeta.add_liquidity([1000000000000000000n,1000000000000000000n],0);
-    // await tx2.wait();
-    // console.log(tx2);
-}
+    //     let tx1=await swapMeta.exchange(0,1,1000,0)
+    //     await tx1.wait();
+    //     console.log(tx1);
+    // });
 
-async function exchange(){
-    const swapMeta=await ethers.getContractAt("SwapMeta",process.env.SWAP_META);
-    const stbToken =await ethers.getContractAt("ERC20", process.env.STB_TOKEN);
-    let tx= await stbToken.approve(process.env.SWAP_META,1e14)
-    await tx.wait();
-    const tx1=await swapMeta.exchange(0,1,1e14,0)
-    await tx1.wait();
-    console.log(tx1);
-}
+    // it("should exchange underlying tokens", async function () {
+    //     let tx= await stbToken.approve(process.env.SWAP_META, 100)
+    //     await tx.wait();
 
-async function exchange_underlying(){
-    const swapMeta=await ethers.getContractAt("SwapMeta",process.env.SWAP_META);
-    const stbToken =await ethers.getContractAt("ERC20", process.env.STB_TOKEN);
-    let tx= await stbToken.approve(process.env.SWAP_META,1e14)
-    await tx.wait();
-    const tx1=await swapMeta.exchange(0,1,1e14,0)
-    await tx1.wait();
-    console.log(tx1);
-}
+    //     const tx1=await swapMeta.exchange_underlying(0,2,100,0)
+    //     await tx1.wait();
+    //     console.log(tx1);
+    // });
 
-async function remove_liquidity(){
-    const swapMeta=await ethers.getContractAt("SwapMeta",process.env.SWAP_META);
-    // const token = await ethers.getContractAt("ERC20", process.env.POOL_TOKEN);
-    // console.log(await token.balanceOf("process.env.PUBLIC_KEY"));
-    const tx=await swapMeta.remove_liquidity(2000000000000000000n, [0,0]);
-    await tx.wait();
-    console.log(tx);
-}
+    // it("should remove liquidity", async function () {
 
-async function get_balances(){
-    const swapMeta = await ethers.getContractAt("SwapMeta",process.env.SWAP_META);
-    const basePool = await ethers.getContractAt("StableSwapThreePoolInfo",process.env.STABLE_SWAP_THREE_POOL_INFO)
-    
-    // let tx1 = await basePool.balances(process.env.BASE_POOL);
-    // console.log(tx1);
-}
+    //     // console.log(await poolToken.balanceOf(process.env.PUBLIC_KEY));
+    //     let tx=await poolToken.approve(process.env.SWAP_META,1e6)
+    //     await tx.wait();
 
-addLiquidity().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+    //     const tx1 =await swapMeta.remove_liquidity(1e6, [0,0]);
+    //     await tx1.wait();
+    //     console.log(tx1);
+    // });
+
+    it("should get balances", async function () {
+        console.log(await swapMeta.balances(0));
+        console.log(await swapMeta.balances(1));
+        console.log(await poolToken.balanceOf(process.env.PUBLIC_KEY));
+    });
 });

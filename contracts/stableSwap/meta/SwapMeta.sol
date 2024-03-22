@@ -16,13 +16,13 @@ contract SwapMeta is ReentrancyGuard {
 
     uint256 constant FEE_DENOMINATOR = 10**10;
     uint256 constant PRECISION = 10**18;
-    uint256[N_COINS] PRECISION_MUL = [1, 1];
+    uint256[N_COINS] PRECISION_MUL = [10**16, 1];
     uint256[N_COINS] RATES = [10**18, 10**18];
 
     uint256 constant BASE_N_COINS = 3;
     uint256 constant N_ALL_COINS = N_COINS + BASE_N_COINS - 1;
     uint256[BASE_N_COINS] BASE_PRECISION_MUL = [1, 10**12, 10**12];
-    uint256[BASE_N_COINS] BASE_RATES = [10**18, 10**27, 10**27];
+    uint256[BASE_N_COINS] BASE_RATES = [10**18, 10**30, 10**30];
 
     address constant FEE_ASSET = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
 
@@ -149,10 +149,7 @@ contract SwapMeta is ReentrancyGuard {
             base_coins[i] = _base_coin;
 
             // approve underlying coins for infinite transfers
-            (bool success, bytes memory data) = _base_coin.call(
-                abi.encodeWithSignature("approve(address,uint256)", _base_pool, MAX_UINT256)
-            );
-            require(success && (data.length == 0 || abi.decode(data, (bool))), "Approval failed");
+            require(ERC20(_base_coin).approve(_base_pool, MAX_UINT256),"Approve fail");
         }
     }
 
@@ -202,7 +199,7 @@ contract SwapMeta is ReentrancyGuard {
         return result;
     }
 
-    function _vp_rate() internal returns (uint256) { //bỏ view
+    function _vp_rate() public returns (uint256) { //bỏ view
         if (block.timestamp > base_cache_updated + BASE_CACHE_EXPIRES) {
             uint256 vprice = IThreePoolStableSwap(base_pool).get_virtual_price();
             base_virtual_price = vprice;
@@ -300,7 +297,7 @@ contract SwapMeta is ReentrancyGuard {
         return diff * token_amount / D0;
     }
 
-        function add_liquidity(uint256[N_COINS] calldata amounts, uint256 min_mint_amount) external nonReentrant() returns (uint256) {
+    function add_liquidity(uint256[N_COINS] calldata amounts, uint256 min_mint_amount) external nonReentrant() returns (uint256) {
         assert(!is_killed); // dev: is killed
 
         uint256 _fee = fee * N_COINS / (4 * (N_COINS - 1));
@@ -398,9 +395,9 @@ contract SwapMeta is ReentrancyGuard {
         uint256 Ann = amp * N_COINS;
 
         for (uint256 _i = 0; _i < N_COINS; _i++) {
-            if (_i == uint256(i)) {
+            if (_i == i) {
                 _x = x;
-            } else if (_i != uint256(j)) {
+            } else if (_i != j) {
                 _x = xp_[_i];
             } else {
                 continue;
@@ -436,11 +433,11 @@ contract SwapMeta is ReentrancyGuard {
         uint256[N_COINS] memory rates = RATES;
         rates[MAX_COIN] = _vp_rate_ro();
         uint256[N_COINS] memory xp = _xp(rates[MAX_COIN]);
-        uint256 x = xp[uint256(i)] + (dx * rates[uint256(i)] / PRECISION);
+        uint256 x = xp[i] + (dx * rates[i] / PRECISION);
         uint256 y = get_y(i, j, x, xp);
-        uint256 dy = xp[uint256(j)] - y - 1;
+        uint256 dy = xp[j] - y - 1;
         uint256 _fee = fee * dy / FEE_DENOMINATOR;
-        return (dy - _fee) * PRECISION / rates[uint256(j)];
+        return (dy - _fee) * PRECISION / rates[j];
     }
 
     function get_dy_underlying(uint256 i, uint256 j, uint256 dx) external view returns (uint256) {
@@ -449,48 +446,46 @@ contract SwapMeta is ReentrancyGuard {
         uint256[N_COINS] memory xp = _xp(vp_rate);
         uint256[N_COINS] memory precisions = PRECISION_MUL;
         address _base_pool = base_pool;
-        uint256 base_i = i - MAX_COIN;
-        uint256 base_j = j - MAX_COIN;
         uint256 meta_i = MAX_COIN;
         uint256 meta_j = MAX_COIN;
 
-        if (base_i < 0) {
+        if (i < MAX_COIN) {
             meta_i = i;
         }
-        if (base_j < 0) {
+        if (j < MAX_COIN) {
             meta_j = j;
         }
 
         uint256 x = 0;
 
-        if (base_i < 0) {
-            x = xp[uint256(i)] + dx * precisions[uint256(i)];
+        if (i < MAX_COIN) {
+            x = xp[i] + dx * precisions[i];
         } else {
-            if (base_j < 0) {
+            if (j < MAX_COIN) {
                 uint256[BASE_N_COINS] memory base_inputs; 
-                base_inputs[uint256(base_i)] = dx;
+                base_inputs[i - MAX_COIN] = dx;
                 x = IThreePoolStableSwap(_base_pool).calc_token_amount(base_inputs, true) * vp_rate / PRECISION;
                 x -= x * IThreePoolStableSwap(_base_pool).fee() / (2 * FEE_DENOMINATOR);
                 x += xp[MAX_COIN];
             } else {
-                return IThreePoolStableSwap(_base_pool).get_dy(base_i, base_j, dx);
+                return IThreePoolStableSwap(_base_pool).get_dy(i - MAX_COIN, j - MAX_COIN, dx);
             }
         }
 
         uint256 y = get_y(meta_i, meta_j, x, xp);
-        uint256 dy = xp[uint256(meta_j)] - y - 1;
+        uint256 dy = xp[meta_j] - y - 1;
         dy = (dy - fee * dy / FEE_DENOMINATOR);
 
-        if (base_j < 0) {
-            dy /= precisions[uint256(meta_j)];
+        if (j < MAX_COIN) {
+            dy /= precisions[meta_j];
         } else {
-            dy = IThreePoolStableSwap(_base_pool).calc_withdraw_one_coin(dy * PRECISION / vp_rate, base_j);
+            dy = IThreePoolStableSwap(_base_pool).calc_withdraw_one_coin(dy * PRECISION / vp_rate, j - MAX_COIN);
         }
 
         return dy;
     }
 
-        function exchange(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external nonReentrant() returns (uint256) {
+    function exchange(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external nonReentrant() returns (uint256) {
         assert(!is_killed); // dev: is killed
         uint256[N_COINS] memory rates = RATES;
         rates[MAX_COIN] = _vp_rate();
@@ -498,235 +493,91 @@ contract SwapMeta is ReentrancyGuard {
         uint256[N_COINS] memory old_balances = balances;
         uint256[N_COINS] memory xp = _xp_mem(rates[MAX_COIN], old_balances);
 
-        uint256 x = xp[uint256(i)] + dx * rates[uint256(i)] / PRECISION;
+        uint256 x = xp[i] + dx * rates[i] / PRECISION;
         uint256 y = get_y(i, j, x, xp);
 
-        uint256 dy = xp[uint256(j)] - y - 1; // -1 just in case there were some rounding errors
+        uint256 dy = xp[j] - y - 1; // -1 just in case there were some rounding errors
         uint256 dy_fee = dy * fee / FEE_DENOMINATOR;
 
         // Convert all to real units
-        dy = (dy - dy_fee) * PRECISION / rates[uint256(j)];
+        dy = (dy - dy_fee) * PRECISION / rates[j];
         require (dy >= min_dy, "Too few coins in result");
 
         uint256 dy_admin_fee = dy_fee * admin_fee / FEE_DENOMINATOR;
-        dy_admin_fee = dy_admin_fee * PRECISION / rates[uint256(j)];
+        dy_admin_fee = dy_admin_fee * PRECISION / rates[j];
 
         // Change balances exactly in same way as we change actual ERC20 coin amounts
-        balances[uint256(i)] = old_balances[uint256(i)] + dx;
+        balances[i] = old_balances[i] + dx;
         // When rounding errors happen, we undercharge admin fee in favor of LP
-        balances[uint256(j)] = old_balances[uint256(j)] - dy - dy_admin_fee;
+        balances[j] = old_balances[j] - dy - dy_admin_fee;
 
-        require(ERC20(coins[uint256(i)]).transferFrom(msg.sender, address(this), dx), "Failed transfer");
-        require(ERC20(coins[uint256(j)]).transfer(msg.sender, dy), "Failed transfer");
+        require(ERC20(coins[i]).transferFrom(msg.sender, address(this), dx), "Failed transfer");
+        require(ERC20(coins[j]).transfer(msg.sender, dy), "Failed transfer");
 
         emit TokenExchange(msg.sender, i, dx, j, dy);
 
         return dy;
     }
 
-    // function exchange_underlying(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external nonReentrant() returns (uint256) {
-    //     assert(!is_killed); // dev: is killed
-    //     uint256[N_COINS] memory rates = RATES;
-    //     rates[MAX_COIN] = _vp_rate();
-    //     address _base_pool = base_pool;
-
-    //     // Use base_i or base_j if they are >= 0
-    //     uint256 base_i = i - MAX_COIN;
-    //     uint256 base_j = j - MAX_COIN;
-    //     uint256 meta_i = MAX_COIN;
-    //     uint256 meta_j = MAX_COIN;
-    //     if (base_i < 0) {
-    //         meta_i = i;
-    //     }
-    //     if (base_j < 0) {
-    //         meta_j = j;
-    //     }
-    //     uint256 dy = 0;
-
-    //     // Addresses for input and output coins
-    //     address input_coin = address(0);
-    //     if (base_i < 0) {
-    //         input_coin = coins[uint256(i)];
-    //     } else {
-    //         input_coin = base_coins[uint256(base_i)];
-    //     }
-    //     address output_coin = address(0);
-    //     if (base_j < 0) {
-    //         output_coin = coins[uint256(j)];
-    //     } else {
-    //         output_coin = base_coins[uint256(base_j)];
-    //     }
-
-    //     // Handle potential Tether fees
-    //     uint256 dx_w_fee = dx;
-    //     if (input_coin == FEE_ASSET) {
-    //         dx_w_fee = ERC20(FEE_ASSET).balanceOf(address(this));
-    //     }
-    //     // "safeTransferFrom" which works for ERC20s which return bool or not
-    //     (bool success, bytes memory data) = input_coin.call(
-    //         abi.encodeWithSelector(
-    //             bytes4(keccak256("transferFrom(address,address,uint256)")),
-    //             msg.sender,
-    //             address(this),
-    //             dx
-    //         )
-    //     );
-    //     require(success && (data.length == 0 || abi.decode(data, (bool))), "Failed transfer");
-    //     // end "safeTransferFrom"
-    //     // Handle potential Tether fees
-    //     if (input_coin == FEE_ASSET) {
-    //         dx_w_fee = ERC20(FEE_ASSET).balanceOf(address(this)) - dx_w_fee;
-    //     }
-
-    //     if (base_i < 0 || base_j < 0) {
-    //         uint256[N_COINS] memory old_balances = balances;
-    //         uint256[N_COINS] memory xp = _xp_mem(rates[MAX_COIN], old_balances);
-
-    //         uint256 x = 0;
-    //         if (base_i < 0) {
-    //             x = xp[uint256(i)] + dx_w_fee * rates[uint256(i)] / PRECISION;
-    //         } else {
-    //             // i is from BasePool
-    //             // At first, get the amount of pool tokens
-    //             uint256[BASE_N_COINS] memory base_inputs; 
-    //             base_inputs[uint256(base_i)] = dx_w_fee;
-    //             address coin_i = coins[MAX_COIN];
-    //             // Deposit and measure delta
-    //             x = ERC20(coin_i).balanceOf(address(this));
-    //             Curve(_base_pool).add_liquidity(base_inputs, 0);
-    //             // Need to convert pool token to "virtual" units using rates
-    //             // dx is also different now
-    //             dx_w_fee = ERC20(coin_i).balanceOf(address(this)) - x;
-    //             x = dx_w_fee * rates[MAX_COIN] / PRECISION;
-    //             // Adding number of pool tokens
-    //             x += xp[MAX_COIN];
-    //         }
-
-    //         uint256 y = get_y(meta_i, meta_j, x, xp);
-
-    //         // Either a real coin or token
-    //         dy = xp[uint256(meta_j)] - y - 1; // -1 just in case there were some rounding errors
-    //         uint256 dy_fee = dy * fee / FEE_DENOMINATOR;
-
-    //         // Convert all to real units
-    //         // Works for both pool coins and real coins
-    //         dy = (dy - dy_fee) * PRECISION / rates[uint256(meta_j)];
-
-    //         uint256 dy_admin_fee = dy_fee * admin_fee / FEE_DENOMINATOR;
-    //         dy_admin_fee = dy_admin_fee * PRECISION / rates[uint256(meta_j)];
-
-    //         // Change balances exactly in same way as we change actual ERC20 coin amounts
-    //         balances[uint256(meta_i)] = old_balances[uint256(meta_i)] + dx_w_fee;
-    //         // When rounding errors happen, we undercharge admin fee in favor of LP
-    //         balances[uint256(meta_j)] = old_balances[uint256(meta_j)] - dy - dy_admin_fee;
-
-    //         // Withdraw from the base pool if needed
-    //         if (base_j >= 0) {
-    //             uint256 out_amount = ERC20(output_coin).balanceOf(address(this));
-    //             Curve(_base_pool).remove_liquidity_one_coin(dy, base_j, 0);
-    //             dy = ERC20(output_coin).balanceOf(address(this)) - out_amount;
-    //         }
-
-    //         require(dy >= min_dy, "Too few coins in result");
-    //     } else {
-    //         // If both are from the base pool
-    //         dy = ERC20(output_coin).balanceOf(address(this));
-    //         Curve(_base_pool).exchange(base_i, base_j, dx_w_fee, min_dy);
-    //         dy = ERC20(output_coin).balanceOf(address(this)) - dy;
-    //     }
-
-    //     // "safeTransfer" which works for ERC20s which return bool or not
-    //     (success, data) = output_coin.call(
-    //         abi.encodeWithSelector(
-    //             bytes4(keccak256("transfer(address,uint256)")),
-    //             msg.sender,
-    //             dy
-    //         )
-    //     );
-    //     require(success && (data.length == 0 || abi.decode(data, (bool))), "Failed transfer");
-
-    //     emit TokenExchangeUnderlying(msg.sender, i, dx, j, dy);
-
-    //     return dy;
-    // }
-
-    // 
-    
     function exchange_underlying(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external nonReentrant() returns (uint256) {
-    assert(!is_killed); // dev: is killed
-    uint256[N_COINS] memory rates = RATES;
-    rates[MAX_COIN] = _vp_rate();
+        // assert(!is_killed); // dev: is killed
+        uint256[N_COINS] memory rates = RATES;
+        rates[MAX_COIN] = _vp_rate();
 
-    uint256 dy = 0;
+        uint256 dy = 0;
 
-    // Addresses for input and output coins
-    address input_coin = (i - MAX_COIN < 0) ? coins[uint256(i)] : base_coins[uint256(i - MAX_COIN)];
-    address output_coin = (j - MAX_COIN < 0) ? coins[uint256(j)] : base_coins[uint256(j - MAX_COIN)];
+        // // Addresses for input and output coins
+        address input_coin = (i < MAX_COIN ) ? coins[i] : base_coins[i - MAX_COIN];
+        address output_coin = (j < MAX_COIN) ? coins[j] : base_coins[j - MAX_COIN];
 
-    // Handle potential Tether fees
-    uint256 dx_w_fee = dx;
-    if (input_coin == FEE_ASSET) {
-        dx_w_fee = ERC20(FEE_ASSET).balanceOf(address(this));
-    }
-    // "safeTransferFrom" which works for ERC20s which return bool or not
-    (bool success, bytes memory data) = input_coin.call(
-        abi.encodeWithSelector(
-            bytes4(keccak256("transferFrom(address,address,uint256)")),
-            msg.sender,
-            address(this),
-            dx
-        )
-    );
-    require(success && (data.length == 0 || abi.decode(data, (bool))), "Failed transfer");
-    // end "safeTransferFrom"
-    // Handle potential Tether fees
-    if (input_coin == FEE_ASSET) {
-        dx_w_fee = ERC20(FEE_ASSET).balanceOf(address(this)) - dx_w_fee;
-    }
+        // // // Handle potential Tether fees
+        uint256 dx_w_fee = dx;
+        if (input_coin == FEE_ASSET) {
+            dx_w_fee = ERC20(FEE_ASSET).balanceOf(address(this));
+        }
+        // "safeTransferFrom" which works for ERC20s which return bool or not
+        require(ERC20(input_coin).transferFrom(msg.sender, address(this), dx),"Transfer Fail");
 
-    if (i - MAX_COIN < 0 || j - MAX_COIN < 0) {
-        dy = exchange_underlying_calculation(i - MAX_COIN, (i - MAX_COIN < 0) ? i : MAX_COIN, (j - MAX_COIN < 0) ? j : MAX_COIN, dx_w_fee);
-        // Withdraw from the base pool if needed
-        if (j - MAX_COIN >= 0) {
-            IThreePoolStableSwap(base_pool).remove_liquidity_one_coin(dy, j - MAX_COIN, 0);
-            dy = ERC20(output_coin).balanceOf(address(this)) - ERC20(output_coin).balanceOf(address(this));
+
+        if ( i < MAX_COIN || j < MAX_COIN) {
+            dy = exchange_underlying_calculation(i, (i < MAX_COIN ) ? i : MAX_COIN, (j < MAX_COIN)  ? j : MAX_COIN, dx_w_fee);
+            // Withdraw from the base pool if needed
+            if (j >= MAX_COIN) {
+                uint256 out_amount = ERC20(output_coin).balanceOf(address(this));
+                IThreePoolStableSwap(base_pool).remove_liquidity_one_coin(dy, j - MAX_COIN, 0);
+                dy = ERC20(output_coin).balanceOf(address(this)) - out_amount;
+            }
+
+            require(dy >= min_dy, "Too few coins in result");
+        }
+        else {
+            dy = ERC20(output_coin).balanceOf(address(this));
+            IThreePoolStableSwap(base_pool).exchange(i - MAX_COIN, j - MAX_COIN, dx_w_fee, min_dy);
+            dy = ERC20(output_coin).balanceOf(address(this)) - dy;
         }
 
-        require(dy >= min_dy, "Too few coins in result");
-    } else {
-        dy = ERC20(output_coin).balanceOf(address(this));
-        IThreePoolStableSwap(base_pool).exchange(i - MAX_COIN, j - MAX_COIN, dx_w_fee, min_dy);
-        dy = ERC20(output_coin).balanceOf(address(this)) - dy;
+        // "safeTransfer" which works for ERC20s which return bool or not
+        require(ERC20(output_coin).transfer(msg.sender,dy),"Transfer Fail");
+
+        emit TokenExchangeUnderlying(msg.sender, i, dx, j, dy);
+
+        return dy;
     }
 
-    // "safeTransfer" which works for ERC20s which return bool or not
-    (success, data) = output_coin.call(
-        abi.encodeWithSelector(
-            bytes4(keccak256("transfer(address,uint256)")),
-            msg.sender,
-            dy
-        )
-    );
-    require(success && (data.length == 0 || abi.decode(data, (bool))), "Failed transfer");
-
-    emit TokenExchangeUnderlying(msg.sender, i, dx, j, dy);
-
-    return dy;
-}
-
-    function exchange_underlying_calculation(uint256 base_i, uint256 meta_i, uint256 meta_j, uint256 dx_w_fee) private returns (uint256) {
+    function exchange_underlying_calculation(uint256 i, uint256 meta_i, uint256 meta_j, uint256 dx_w_fee) public  returns (uint256) {
         uint256[N_COINS] memory rates = RATES;
+        rates[MAX_COIN] = _vp_rate();
         uint256[N_COINS] memory old_balances = balances;
         uint256[N_COINS] memory xp = _xp_mem(rates[MAX_COIN], old_balances);
 
         uint256 x = 0;
-        if (base_i < 0) {
-            x = xp[uint256(meta_i)] + dx_w_fee * rates[uint256(meta_i)] / PRECISION;
+        if (i < MAX_COIN) {
+            x = xp[i] + dx_w_fee * rates[i] / PRECISION;
         } else {
             // i is from BasePool
             // At first, get the amount of pool tokens
             uint256[BASE_N_COINS] memory base_inputs; 
-            base_inputs[uint256(base_i)] = dx_w_fee;
+            base_inputs[i - MAX_COIN] = dx_w_fee;
             address coin_i = coins[MAX_COIN];
             // Deposit and measure delta
             x = ERC20(coin_i).balanceOf(address(this));
@@ -742,26 +593,26 @@ contract SwapMeta is ReentrancyGuard {
         uint256 y = get_y(meta_i, meta_j, x, xp);
 
         // Either a real coin or token
-        uint256 dy = xp[uint256(meta_j)] - y - 1; // -1 just in case there were some rounding errors
+        uint256 dy = xp[meta_j] - y - 1; // -1 just in case there were some rounding errors
         uint256 dy_fee = dy * fee / FEE_DENOMINATOR;
 
         // Convert all to real units
         // Works for both pool coins and real coins
-        dy = (dy - dy_fee) * PRECISION / rates[uint256(meta_j)];
+        dy = (dy - dy_fee) * PRECISION / rates[meta_j];
 
         uint256 dy_admin_fee = dy_fee * admin_fee / FEE_DENOMINATOR;
-        dy_admin_fee = dy_admin_fee * PRECISION / rates[uint256(meta_j)];
+        dy_admin_fee = dy_admin_fee * PRECISION / rates[meta_j];
 
         // Change balances exactly in same way as we change actual ERC20 coin amounts
-        balances[uint256(meta_i)] = old_balances[uint256(meta_i)] + dx_w_fee;
+        balances[meta_i] = old_balances[meta_i] + dx_w_fee;
         // When rounding errors happen, we undercharge admin fee in favor of LP
-        balances[uint256(meta_j)] = old_balances[uint256(meta_j)] - dy - dy_admin_fee;
+        balances[meta_j] = old_balances[meta_j] - dy - dy_admin_fee;
 
         return dy;
     }
 
 
-        function remove_liquidity(uint256 _amount, uint256[N_COINS] memory min_amounts) external nonReentrant() returns (uint256[N_COINS] memory) {
+    function remove_liquidity(uint256 _amount, uint256[N_COINS] memory min_amounts) external nonReentrant() returns (uint256[N_COINS] memory) {
         uint256 total_supply = token.totalSupply();
         uint256[N_COINS] memory amounts;
         uint256[N_COINS] memory fees; // Fees are unused but we've got them historically in event
@@ -840,7 +691,7 @@ contract SwapMeta is ReentrancyGuard {
         // x_1**2 + b*x_1 = c
         // x_1 = (x_1**2 + c) / (2*x_1 + b)
         assert(i >= 0); // dev: i below zero
-        assert(uint256(i) < N_COINS); // dev: i above N_COINS
+        assert(i < N_COINS); // dev: i above N_COINS
 
         uint256 S_ = 0;
         uint256 _x = 0;
@@ -850,7 +701,7 @@ contract SwapMeta is ReentrancyGuard {
         uint256 Ann = A_ * N_COINS;
 
         for (uint256 _i = 0; _i < N_COINS; _i++) {
-            if (_i != uint256(i)) {
+            if (_i != i) {
                 _x = xp[_i];
             } else {
                 continue;
@@ -895,11 +746,11 @@ contract SwapMeta is ReentrancyGuard {
         rates[MAX_COIN] = vp_rate;
 
         uint256[N_COINS] memory xp_reduced = xp;
-        uint256 dy_0 = (xp[uint256(i)] - new_y) * PRECISION / rates[uint256(i)]; // w/o fees
+        uint256 dy_0 = (xp[i] - new_y) * PRECISION / rates[i]; // w/o fees
 
         for (uint256 j = 0; j < N_COINS; j++) {
             uint256 dx_expected = 0;
-            if (j == uint256(i)) {
+            if (j == i) {
                 dx_expected = xp[j] * D1 / D0 - new_y;
             } else {
                 dx_expected = xp[j] - xp[j] * D1 / D0;
@@ -907,8 +758,8 @@ contract SwapMeta is ReentrancyGuard {
             xp_reduced[j] -= fee * N_COINS / (4 * (N_COINS - 1)) * dx_expected / FEE_DENOMINATOR;
         }
 
-        uint256 dy = xp_reduced[uint256(i)] - get_y_D(_get_A(), i, xp_reduced, D1);
-        dy = (dy - 1) * PRECISION / rates[uint256(i)]; // Withdraw less to account for rounding errors
+        uint256 dy = xp_reduced[i] - get_y_D(_get_A(), i, xp_reduced, D1);
+        dy = (dy - 1) * PRECISION / rates[i]; // Withdraw less to account for rounding errors
 
         return (dy, dy_0 - dy, token.totalSupply());
     }
@@ -929,9 +780,9 @@ contract SwapMeta is ReentrancyGuard {
         (dy, dy_fee, total_supply) = _calc_withdraw_one_coin(_token_amount, i, vp_rate);
         require(dy >= _min_amount, "Not enough coins removed");
 
-        balances[uint256(i)] -= (dy + dy_fee * admin_fee / FEE_DENOMINATOR);
+        balances[i] -= (dy + dy_fee * admin_fee / FEE_DENOMINATOR);
         token.burnFrom(msg.sender, _token_amount); // dev: insufficient funds
-        require(ERC20(coins[uint256(i)]).transfer(msg.sender, dy), "Failed transfer");
+        require(ERC20(coins[i]).transfer(msg.sender, dy), "Failed transfer");
 
         emit RemoveLiquidityOne(msg.sender, _token_amount, dy, total_supply - _token_amount);
 
