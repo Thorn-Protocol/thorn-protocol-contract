@@ -30,6 +30,8 @@ async function exactOutputStableSwap(addresses:Array<String>,flag:Array<number>,
     console.log(tx1);
 }
 
+
+
 get_balances()
     .then(() => process.exit(0))
     .catch((error) => {

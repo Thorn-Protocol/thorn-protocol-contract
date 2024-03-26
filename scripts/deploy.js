@@ -3,10 +3,10 @@ const { writeToEnvFile } = require("./utils/helper");
 
 async function main() {
 
-    const mockTokenFactory = await ethers.getContractFactory("MockToken");
-    const mockTokenContract = await mockTokenFactory.deploy();
-    console.log(`Contract deployed to address: ${mockTokenContract.target}`);
-    writeToEnvFile("TOKEN_A", mockTokenContract.target);
+    // const mockTokenFactory = await ethers.getContractFactory("StableSwapLP");
+    // const mockTokenContract = await mockTokenFactory.deploy();
+    // console.log(`Contract deployed to address: ${mockTokenContract.address}`);
+    // writeToEnvFile("PLAIN_LENDING_POOL_TOKEN", mockTokenContract.address);
 
     // const stableSwapInfoFactory = await ethers.getContractFactory("StableSwapInfo");
     // const stableSwapInfoContract = await stableSwapInfoFactory.deploy(
@@ -74,6 +74,20 @@ async function main() {
     // const StableSwapRouterContract =await StableSwapRouterFactory.deploy(process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO);
     // console.log(`Contract deployed to address: ${StableSwapRouterContract.target}`);
     // writeToEnvFile("STABLE_SWAP_ROUTER", StableSwapRouterContract.target);
+
+    // const PlainLendingPoolFactory=await ethers.getContractFactory("PlainLendingPool");
+    // const PlainLendingPoolContract=await PlainLendingPoolFactory.deploy(
+    //   [process.env.tDAI, process.env.tUSDC],
+    //   [process.env.DAI, process.env.USDC],
+    //   process.env.PLAIN_LENDING_POOL_TOKEN,
+    //   process.env.TRAVA_LENDING_POOL,
+    //   200,
+    //   4000000,
+    //   5000000000,
+    //   20000000000
+    // );
+    // console.log(`Contract deployed to address: ${PlainLendingPoolContract.address}`);
+    // writeToEnvFile("PLAIN_LENDING_POOL",PlainLendingPoolContract.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

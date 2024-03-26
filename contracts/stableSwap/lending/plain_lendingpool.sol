@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../interfaces/ILendingPool.sol";
 import "../../interfaces/IStableSwapLP.sol";
 
-contract LendingTravaPool is ReentrancyGuard {
+contract PlainLendingPool is ReentrancyGuard {
 
     // These constants must be set prior to compiling
-    uint8 constant N_COINS = 3;
-    uint256[N_COINS] PRECISION_MUL = [1, 1000000000000, 1000000000000];
+    uint8 constant N_COINS = 2;
+    uint256[N_COINS] PRECISION_MUL = [1, 1000000000000];
 
     // fixed constants
     uint256 constant FEE_DENOMINATOR = 10 ** 10;
@@ -164,17 +164,8 @@ contract LendingTravaPool is ReentrancyGuard {
 
         // approve transfer of underlying coin to trava lending pool
         for (uint8 i = 0; i < N_COINS; i++) {
-            require(_approve(underlying_coins[i], _trava_lending_pool, type(uint256).max), "Approval failed");
+            require(ERC20(underlying_coins[i]).approve(_trava_lending_pool, type(uint256).max), "Approval failed");
         }
-    }
-
-    function _approve(address _token, address _spender, uint256 _amount) internal returns (bool) {
-        bool success;
-        bytes memory data;
-
-        // solhint-disable-next-line avoid-low-level-calls
-        (success, data) = _token.call(abi.encodeWithSelector(ERC20(_token).approve.selector, _spender, _amount));
-        return (success && (data.length == 0 || abi.decode(data, (bool))));
     }
 
     function _get_A() internal view returns (uint256) {
@@ -479,7 +470,7 @@ contract LendingTravaPool is ReentrancyGuard {
         address lending_pool = trava_lending_pool;
         uint16 travaReferral = uint16(trava_referral);
 
-        require(ERC20(u_coin_i).transferFrom(msg.sender, address(this), dx));
+        require(ERC20(u_coin_i).transferFrom(msg.sender, address(this), dx), "Failed transfer");
 
         ILendingPool(lending_pool).deposit(u_coin_i, dx, address(this), travaReferral);
         ILendingPool(lending_pool).withdraw(underlying_coins[j], dy, msg.sender);
@@ -532,7 +523,7 @@ contract LendingTravaPool is ReentrancyGuard {
             if (_use_underlying) {
                 ILendingPool(lending_pool).withdraw(underlying_coins[i], value, msg.sender);
             } else {
-                require(ERC20(coins[i]).transfer(msg.sender, value));
+                require(ERC20(coins[i]).transfer(msg.sender, value), "Failed transfer");
             }
         }
 
@@ -597,7 +588,7 @@ contract LendingTravaPool is ReentrancyGuard {
                 if (_use_underlying) {
                     ILendingPool(lending_pool).withdraw(underlying_coins[i], amount, msg.sender);
                 } else {
-                    require(ERC20(coins[i]).transfer(msg.sender, amount));
+                    require(ERC20(coins[i]).transfer(msg.sender, amount), "Failed transfer");
                 }
             }
         }
@@ -694,7 +685,7 @@ contract LendingTravaPool is ReentrancyGuard {
         if (_use_underlying) {
             ILendingPool(trava_lending_pool).withdraw(underlying_coins[i], dy, msg.sender);
         } else {
-            require(ERC20(coins[i]).transfer(msg.sender, dy));
+            require(ERC20(coins[i]).transfer(msg.sender, dy), "Failed transfer");
         }
 
         emit RemoveLiquidityOne(msg.sender, _token_amount, dy);
