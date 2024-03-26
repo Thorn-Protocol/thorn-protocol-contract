@@ -1,15 +1,20 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.10;
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../interfaces/ILendingPool.sol";
 import "../../interfaces/IStableSwapLP.sol";
 
-contract LendingTravaPool is ReentrancyGuard {
+contract LendingTravaPool is ReentrancyGuard,Ownable {
+
+
+    using SafeERC20 for IERC20;
 
     // These constants must be set prior to compiling
-    uint8 constant N_COINS = 3;
-    uint256[N_COINS] PRECISION_MUL = [1, 1000000000000, 1000000000000];
+    uint8 constant N_COINS = 2;
+    uint256[N_COINS] PRECISION_MUL = [1, 1000000000000];
 
     // fixed constants
     uint256 constant FEE_DENOMINATOR = 10 ** 10;
@@ -33,7 +38,7 @@ contract LendingTravaPool is ReentrancyGuard {
     uint256 public offpeg_fee_multiplier;  // * 1e10
     uint256 public admin_fee;  // admin_fee * 1e10
 
-    address public owner;
+    // address public owner;
     address public lp_token;
 
     address public trava_lending_pool;
@@ -45,15 +50,23 @@ contract LendingTravaPool is ReentrancyGuard {
     uint256 public future_A_time;
 
     uint256 public admin_actions_deadline;
-    uint256 public transfer_ownership_deadline;
+    // uint256 public transfer_ownership_deadline;
     uint256 public future_fee;
     uint256 public future_admin_fee;
     uint256 public future_offpeg_fee_multiplier;  // * 1e10
-    address public future_owner;
+    // address public future_owner;
 
     bool public is_killed;
     uint256 public kill_deadline;
     uint256 constant KILL_DEADLINE_DT = 2 * 30 * 86400;
+
+    address public immutable STABLESWAP_FACTORY;
+    bool public isInitialized;
+    address constant ROSE_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    bool support_ROSE;
+    uint256 public rose_gas = 4029;
+    uint256 public constant MIN_ROSE_gas = 2300;
+    uint256 public constant MAX_ROSE_gas = 23000;
 
     // Events
     event TokenExchange(
@@ -135,7 +148,13 @@ contract LendingTravaPool is ReentrancyGuard {
         uint256 t
     );
 
-    constructor(
+    event SetROSEGas(uint256 rose_gas);
+
+    constructor() {
+        STABLESWAP_FACTORY = msg.sender;
+    }
+
+    function initialize(
         address[N_COINS] memory _coins,
         address[N_COINS] memory _underlying_coins,
         address _pool_token,
@@ -143,8 +162,16 @@ contract LendingTravaPool is ReentrancyGuard {
         uint256 _A,
         uint256 _fee,
         uint256 _admin_fee,
-        uint256 _offpeg_fee_multiplier
-    ) {
+        uint256 _offpeg_fee_multiplier,
+        address _owner
+    )  external {
+
+        require(!isInitialized, "Operations: Already initialized");
+        require(msg.sender == STABLESWAP_FACTORY, "Operations: Not factory");
+        require(_A <= MAX_A, "_A exceeds maximum");
+        require(_fee <= MAX_FEE, "_fee exceeds maximum");
+        require(_admin_fee <= MAX_ADMIN_FEE, "_admin_fee exceeds maximum");
+        isInitialized = true;
         for (uint8 i = 0; i < N_COINS; i++) {
             require(_coins[i] != address(0), "Coin address cannot be zero");
             require(_underlying_coins[i] != address(0), "Underlying coin address cannot be zero");
@@ -157,7 +184,6 @@ contract LendingTravaPool is ReentrancyGuard {
         fee = _fee;
         admin_fee = _admin_fee;
         offpeg_fee_multiplier = _offpeg_fee_multiplier;
-        owner = msg.sender;
         kill_deadline = block.timestamp + KILL_DEADLINE_DT;
         lp_token = _pool_token;
         trava_lending_pool = _trava_lending_pool;
@@ -166,6 +192,7 @@ contract LendingTravaPool is ReentrancyGuard {
         for (uint8 i = 0; i < N_COINS; i++) {
             require(_approve(underlying_coins[i], _trava_lending_pool, type(uint256).max), "Approval failed");
         }
+         transferOwnership(_owner);
     }
 
     function _approve(address _token, address _spender, uint256 _amount) internal returns (bool) {
@@ -704,8 +731,8 @@ contract LendingTravaPool is ReentrancyGuard {
 
     //Admin function
 
-     function ramp_A(uint256 _future_A, uint256 _future_time) external {
-        require(msg.sender == owner, "Only owner");
+     function ramp_A(uint256 _future_A, uint256 _future_time) external  onlyOwner {
+        // require(msg.sender == owner, "Only owner");
         require(block.timestamp >= initial_A_time + MIN_RAMP_TIME, "Insufficient time");
         require(_future_time >= block.timestamp + MIN_RAMP_TIME, "Insufficient time");
 
@@ -727,8 +754,8 @@ contract LendingTravaPool is ReentrancyGuard {
         emit RampA(_initial_A, _future_A_p, block.timestamp, _future_time);
     }
 
-    function stop_ramp_get_A() external {
-        require(msg.sender == owner, "Only owner");
+    function stop_ramp_get_A() external onlyOwner {
+        // require(msg.sender == owner, "Only owner");
 
         uint256 current_A = _get_A();
         initial_A = current_A;
@@ -739,8 +766,8 @@ contract LendingTravaPool is ReentrancyGuard {
         emit StopRampA(current_A, block.timestamp);
     }
 
-    function commit_new_fee(uint256 new_fee, uint256 new_admin_fee, uint256 new_offpeg_fee_multiplier) external {
-        require(msg.sender == owner, "Only owner");
+    function commit_new_fee(uint256 new_fee, uint256 new_admin_fee, uint256 new_offpeg_fee_multiplier) external onlyOwner {
+        // require(msg.sender == owner, "Only owner");
         require(admin_actions_deadline == 0, "Active action");
         require(new_fee <= MAX_FEE, "Fee exceeds maximum");
         require(new_admin_fee <= MAX_ADMIN_FEE, "Admin fee exceeds maximum");
@@ -755,8 +782,8 @@ contract LendingTravaPool is ReentrancyGuard {
         emit CommitNewFee(_deadline, new_fee, new_admin_fee, new_offpeg_fee_multiplier);
     }
 
-    function apply_new_fee() external {
-        require(msg.sender == owner, "Only owner");
+    function apply_new_fee() external  onlyOwner {
+        // require(msg.sender == owner, "Only owner");
         require(block.timestamp >= admin_actions_deadline, "Insufficient time");
         require(admin_actions_deadline != 0, "No active action");
 
@@ -771,74 +798,91 @@ contract LendingTravaPool is ReentrancyGuard {
         emit NewFee(_fee, _admin_fee, _fml);
     }
 
-    function revert_new_parameters() external {
-        require(msg.sender == owner, "Only owner");
+    function revert_new_parameters() external onlyOwner() {
+        // require(msg.sender == owner, "Only owner");
 
         admin_actions_deadline = 0;
     }
 
-    function commit_transfer_ownership(address _owner) external {
-        require(msg.sender == owner, "Only owner");
-        require(transfer_ownership_deadline == 0, "Active transfer");
+    // function commit_transfer_ownership(address _owner) external {
+    //     require(msg.sender == owner, "Only owner");
+    //     require(transfer_ownership_deadline == 0, "Active transfer");
 
-        uint256 _deadline = block.timestamp + ADMIN_ACTIONS_DELAY;
-        transfer_ownership_deadline = _deadline;
-        future_owner = _owner;
+    //     uint256 _deadline = block.timestamp + ADMIN_ACTIONS_DELAY;
+    //     transfer_ownership_deadline = _deadline;
+    //     future_owner = _owner;
 
-        emit CommitNewAdmin(_deadline, _owner);
-    }
+    //     emit CommitNewAdmin(_deadline, _owner);
+    // }
 
-    function apply_transfer_ownership() external {
-        require(msg.sender == owner, "Only owner");
-        require(block.timestamp >= transfer_ownership_deadline, "Insufficient time");
-        require(transfer_ownership_deadline != 0, "No active transfer");
+    // function apply_transfer_ownership() external {
+    //     require(msg.sender == owner, "Only owner");
+    //     require(block.timestamp >= transfer_ownership_deadline, "Insufficient time");
+    //     require(transfer_ownership_deadline != 0, "No active transfer");
 
-        transfer_ownership_deadline = 0;
-        address _owner = future_owner;
-        owner = _owner;
+    //     transfer_ownership_deadline = 0;
+    //     address _owner = future_owner;
+    //     owner = _owner;
 
-        emit NewAdmin(_owner);
-    }
+    //     emit NewAdmin(_owner);
+    // }
 
-    function revert_transfer_ownership() external {
-        require(msg.sender == owner, "Only owner");
+    // function revert_transfer_ownership() external {
+    //     require(msg.sender == owner, "Only owner");
 
-        transfer_ownership_deadline = 0;
-    }
+    //     transfer_ownership_deadline = 0;
+    // }
 
-     function withdraw_admin_fees() external {
-        require(msg.sender == owner, "Only owner");
+     function withdraw_admin_fees() external onlyOwner {
+        // require(msg.sender == owner, "Only owner");
 
         for (uint256 i = 0; i < N_COINS; i++) {
             uint256 value = admin_balances[i];
             if (value != 0) {
-                require(ERC20(coins[i]).transfer(owner, value), "Transfer failed");
+                transfer_out(coins[i], value);
                 admin_balances[i] = 0;
             }
         }
     }
 
-    function donate_admin_fees() external {
-        require(msg.sender == owner, "Only owner");
+    function donate_admin_fees() external onlyOwner {
         for (uint256 i = 0; i < N_COINS; i++) {
             admin_balances[i] = 0; 
         }
     }
 
-    function kill_me() external {
-        require(msg.sender == owner, "Only owner");
+    function kill_me() external onlyOwner {
+       
         require(kill_deadline > block.timestamp, "Deadline has passed");
         is_killed = true;
     }
 
-    function unkill_me() external {
-        require(msg.sender == owner, "Only owner");
+    function unkill_me() external onlyOwner {
+  
         is_killed = false;
     }
 
-    function set_trava_referral(uint256 referral_code) external {
-        require(msg.sender == owner, "Only owner");
+    function set_trava_referral(uint256 referral_code) external onlyOwner  {
         require(referral_code < 2 ** 16, "Uint16 overflow");
         trava_referral = referral_code;
+    }
+
+    function transfer_out(address coin_address, uint256 value) internal {
+        if (coin_address == ROSE_ADDRESS) {
+            _safeTransferROSE(msg.sender, value);
+        } else {
+            IERC20(coin_address).safeTransfer(msg.sender, value);
+        }
+    }
+
+    function _safeTransferROSE(address to, uint256 value) internal {
+        (bool success, ) = to.call{gas: rose_gas, value: value}("");
+        require(success, "ROSE transfer failed");
+    }
+
+    function set_rose_gas(uint256 _rose_gas) external onlyOwner {
+        require(_rose_gas >= MIN_ROSE_gas && _rose_gas <= MAX_ROSE_gas, "Illegal gas");
+        rose_gas = _rose_gas;
+        emit SetROSEGas(_rose_gas);
     }
 }
