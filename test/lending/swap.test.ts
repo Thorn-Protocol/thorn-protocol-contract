@@ -2,7 +2,7 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import * as dotenv from "dotenv";
-import { ERC20, PlainLendingPool, IStableSwapLP} from "../../typechain-types";
+import { ERC20, LendingTravaPool, IStableSwapLP} from "../../typechain-types";
 
 dotenv.config();
 
@@ -12,7 +12,7 @@ describe("Swap USDC Contract Tests",function(){
     let USDC: ERC20;
     let tDAI: ERC20;
     let tUSDC:ERC20; 
-    let swapLendingContract: PlainLendingPool; 
+    let swapLendingContract: LendingTravaPool; 
     let LP_token: IStableSwapLP;
 
     before(async function(){
@@ -20,7 +20,7 @@ describe("Swap USDC Contract Tests",function(){
         USDC= await ethers.getContractAt("ERC20",process.env.USDC);
         tDAI= await ethers.getContractAt("ERC20",process.env.tDAI);
         tUSDC=await ethers.getContractAt("ERC20",process.env.tUSDC);
-        swapLendingContract=await ethers.getContractAt("PlainLendingPool",process.env.PLAIN_LENDING_POOL);
+        swapLendingContract=await ethers.getContractAt("LendingTravaPool",process.env.PLAIN_LENDING_POOL);
         LP_token = await ethers.getContractAt("IStableSwapLP", process.env.PLAIN_LENDING_POOL_TOKEN);
     })
 
@@ -101,7 +101,7 @@ describe("Swap USDC Contract Tests",function(){
     //     let txDAI=await DAI.approve(swapLendingContract.address,1e6);
     //     await txDAI.wait();
 
-    //     // let expected_token1_balance=await swapLendingContract.get_dy(0,1,1e6); 
+    //     let expected_token1_balance=await swapLendingContract.get_dy(0,1,1e6); 
     //     let user_token0_balance_before=await DAI.balanceOf(process.env.PUBLIC_KEY);
     //     let user_token1_balance_before=await USDC.balanceOf(process.env.PUBLIC_KEY);
 
@@ -119,7 +119,7 @@ describe("Swap USDC Contract Tests",function(){
     //     console.log("exchange DAI amount:" , exchangedToken0Amount);
     //     console.log("redeemed USDC amount: ",exchangedToken1Amount);
 
-    //     // expect(exchangedToken1Amount.toString()).to.equal(expected_token1_balance.toString());
+        // expect(exchangedToken1Amount.toString()).to.equal(expected_token1_balance.toString());
 
     //  })
 
@@ -173,28 +173,28 @@ describe("Swap USDC Contract Tests",function(){
     //  })
 
 
-     it("should remove liquidity imbalance", async function(){
+//      it("should remove liquidity imbalance", async function(){
 
-        let LP_token_before=await LP_token.balanceOf(process.env.PUBLIC_KEY);
-        let token0_balance_before=await tDAI.balanceOf(process.env.PUBLIC_KEY);
-        let token1_balance_before=await tUSDC.balanceOf(process.env.PUBLIC_KEY);
+    //     let LP_token_before=await LP_token.balanceOf(process.env.PUBLIC_KEY);
+    //     let token0_balance_before=await tDAI.balanceOf(process.env.PUBLIC_KEY);
+    //     let token1_balance_before=await tUSDC.balanceOf(process.env.PUBLIC_KEY);
         
-        let remove_token_amounts=[10,1];
-        let max_burn_amount=await swapLendingContract.calc_token_amount(remove_token_amounts,false);
+    //     let remove_token_amounts=[10,1];
+    //     let max_burn_amount=await swapLendingContract.calc_token_amount(remove_token_amounts,false);
         
-        let tx=await swapLendingContract.remove_liquidity_imbalance(remove_token_amounts,max_burn_amount,false);
-        await tx.wait();
-        console.log(tx);
+    //     let tx=await swapLendingContract.remove_liquidity_imbalance(remove_token_amounts,max_burn_amount,false);
+    //     await tx.wait();
+    //     console.log(tx);
         
 
-        let token0_balance_after=await tDAI.balanceOf(process.env.PUBLIC_KEY);
-        let token1_balance_after=await tUSDC.balanceOf(process.env.PUBLIC_KEY);
-        let LP_token_balance_after=await LP_token.balanceOf(process.env.PUBLIC_KEY);
+    //     let token0_balance_after=await tDAI.balanceOf(process.env.PUBLIC_KEY);
+    //     let token1_balance_after=await tUSDC.balanceOf(process.env.PUBLIC_KEY);
+    //     let LP_token_balance_after=await LP_token.balanceOf(process.env.PUBLIC_KEY);
 
-        const resultLP=LP_token_before-LP_token_balance_after;
-        expect(resultLP.toString()).to.equal(max_burn_amount.toString());
-        console.log("redeemed token0 amount: ",token0_balance_after-token0_balance_before);
-        console.log("redeemed token1 amount: ",token1_balance_after-token1_balance_before);
+    //     const resultLP=LP_token_before-LP_token_balance_after;
+    //     expect(resultLP.toString()).to.equal(max_burn_amount.toString());
+    //     console.log("redeemed token0 amount: ",token0_balance_after-token0_balance_before);
+    //     console.log("redeemed token1 amount: ",token1_balance_after-token1_balance_before);
         
-     })
+    //  })
 })

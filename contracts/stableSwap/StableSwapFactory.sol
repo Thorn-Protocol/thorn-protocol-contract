@@ -8,6 +8,12 @@ import "../interfaces/IStableSwapDeployer.sol";
 import "../interfaces/IStableSwapLPFactory.sol";
 
 contract StableSwapFactory is Ownable {
+     enum PoolType {
+        PlainPool, 
+        LendingPool,
+        MetaPool
+    }
+
     struct StableSwapPairInfo {
         address swapContract;
         address token0;
@@ -20,6 +26,26 @@ contract StableSwapFactory is Ownable {
         address token1;
         address token2;
         address LPContract;
+    }
+
+    struct TwoPoolParams {
+        address[2] coins;
+        address[2] underlying_coins;
+        uint256 A;
+        uint256 fee;
+        uint256 admin_fee;
+        address interacted_pool;
+        uint256 offpeg_fee_multiplier;
+    }
+
+    struct ThreePoolParams {
+        address[3] coins;
+        address[3] underlying_coins;
+        uint256 A;
+        uint256 fee;
+        uint256 admin_fee;
+        address interacted_pool; 
+        uint256 _offpeg_fee_multiplier;
     }
 
     mapping(address => mapping(address => mapping(address => StableSwapThreePoolPairInfo))) public stableSwapPairInfo;
@@ -92,25 +118,83 @@ contract StableSwapFactory is Ownable {
         return (tokenA, tokenB, tokenC);
     }
 
-    /**
-     * @notice createSwapPair
-     * @param _tokenA: Addresses of ERC20 conracts .
-     * @param _tokenB: Addresses of ERC20 conracts .
-     * @param _A: Amplification coefficient multiplied by n * (n - 1)
-     * @param _fee: Fee to charge for exchanges
-     * @param _admin_fee: Admin fee
-     */
+    // /**
+    //  * @notice createSwapPair
+    //  * @param _tokenA: Addresses of ERC20 conracts .
+    //  * @param _tokenB: Addresses of ERC20 conracts .
+    //  * @param _A: Amplification coefficient multiplied by n * (n - 1)
+    //  * @param _fee: Fee to charge for exchanges
+    //  * @param _admin_fee: Admin fee
+    //  */
     function createSwapPair(
-        address _tokenA,
-        address _tokenB,
-        uint256 _A,
-        uint256 _fee,
-        uint256 _admin_fee
+        PoolType _poolType,
+        TwoPoolParams memory _params
     ) external onlyOwner {
-        require(_tokenA != ZEROADDRESS && _tokenB != ZEROADDRESS && _tokenA != _tokenB, "Illegal token");
+        (address _tokenA, address _tokenB) = (_params.coins[0],_params.coins[1]);
+        require(
+            _tokenA != ZEROADDRESS &&
+                _tokenB != ZEROADDRESS &&
+                _tokenA != _tokenB,
+            "Illegal token"
+        );
+        if (_poolType == PoolType.LendingPool) {
+            (address _uTokenA, address _uTokenB) = (_params.underlying_coins[0],_params.underlying_coins[1]);
+            require(
+            _uTokenA != ZEROADDRESS &&
+                _uTokenB != ZEROADDRESS &&
+                _uTokenA != _uTokenB,
+            "Illegal token"
+        );
+        }
+
         (address t0, address t1) = sortTokens(_tokenA, _tokenB);
-        address LP = LPFactory.createSwapLP(t0, t1, ZEROADDRESS, address(this));
-        address swapContract = SwapTwoPoolDeployer.createSwapPair(t0, t1, _A, _fee, _admin_fee, msg.sender, LP);
+        address LP = LPFactory.createSwapLP(
+            _tokenA,
+            _tokenB,
+            ZEROADDRESS,
+            address(this)
+        );
+        // address LP=0x22a15f86d0f275ED3748359103B129b51b2E4817;
+        address swapContract;
+        if (_poolType == PoolType.PlainPool)
+            swapContract = SwapTwoPoolDeployer.createSwapPair(
+                t0,
+                t1,
+                _params.A,
+                _params.fee,
+                _params.admin_fee,
+                msg.sender,
+                LP
+            );
+        else if (_poolType == PoolType.LendingPool) {
+           
+            swapContract = SwapTwoPoolDeployer.createLendingSwapPair(
+                _params.coins,
+                _params.underlying_coins,
+                LP,
+                _params.interacted_pool,
+                _params.A,
+                _params.fee,
+                _params.admin_fee,
+                _params.offpeg_fee_multiplier,
+                msg.sender
+            );
+        } 
+        // else if (_poolType == PoolType.MetaPool){
+        //     (
+        //         address[2] memory coins,
+        //         ,
+        //         uint256 A,
+        //         uint256 fee,
+        //         uint256 admin_fee,
+        //         address base_pool,
+        //         address pool_token,
+        //         ,
+        //     ) = _params;
+        //     swapContract = SwapTwoPoolDeployer.createMetaSwapPair(coins,pool_token,base_pool,A,fee,admin_fee);
+
+        // }
+            
         IStableSwapLP(LP).setMinter(swapContract);
         addPairInfoInternal(swapContract, t0, t1, ZEROADDRESS, LP);
     }

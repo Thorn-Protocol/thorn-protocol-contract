@@ -55,10 +55,10 @@ async function main() {
     // console.log(`Contract deployed to address: ${stableSwapThreePoolDeployerContract.target}`);
     // writeToEnvFile("STABLE_SWAP_THREE_POOL_DEPLOYER", stableSwapThreePoolDeployerContract.target);
 
-    // const stableSwapTwoPoolDeployerFactory = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
-    // const stableSwapTwoPoolDeployerContract = await stableSwapTwoPoolDeployerFactory.deploy();
-    // console.log(`Contract deployed to address: ${stableSwapTwoPoolDeployerContract.target}`);
-    // writeToEnvFile("STABLE_SWAP_TWO_POOL_DEPLOYER", stableSwapTwoPoolDeployerContract.target);
+    const stableSwapTwoPoolDeployerFactory = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
+    const stableSwapTwoPoolDeployerContract = await stableSwapTwoPoolDeployerFactory.deploy();
+    console.log(`Contract deployed to address: ${stableSwapTwoPoolDeployerContract.target}`);
+    writeToEnvFile("STABLE_SWAP_TWO_POOL_DEPLOYER_2", stableSwapTwoPoolDeployerContract.target);
 
 
     // const SmartRouterHelperFactory=await ethers.getContractFactory("SmartRouterHelper");
