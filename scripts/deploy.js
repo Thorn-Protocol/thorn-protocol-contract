@@ -1,12 +1,12 @@
-const { ethers } = require("hardhat");
+const { ethers, upgrades  } = require("hardhat");
 const { writeToEnvFile } = require("./utils/helper");
 
 async function main() {
 
-    const mockTokenFactory = await ethers.getContractFactory("MockToken");
-    const mockTokenContract = await mockTokenFactory.deploy();
-    console.log(`Contract deployed to address: ${mockTokenContract.target}`);
-    writeToEnvFile("TOKEN_A", mockTokenContract.target);
+    // const mockTokenFactory = await ethers.getContractFactory("MockToken");
+    // const mockTokenContract = await mockTokenFactory.deploy();
+    // console.log(`Contract deployed to address: ${mockTokenContract.target}`);
+    // writeToEnvFile("TOKEN_A", mockTokenContract.target);
 
     // const stableSwapInfoFactory = await ethers.getContractFactory("StableSwapInfo");
     // const stableSwapInfoContract = await stableSwapInfoFactory.deploy(
@@ -46,34 +46,36 @@ async function main() {
     // writeToEnvFile("STABLE_SWAP_LP", stableSwapLPContract.target);
 
     // const stableSwapLPFactoryFactory = await ethers.getContractFactory("StableSwapLPFactory");
-    // const stableSwapLPFactoryContract = await stableSwapLPFactoryFactory.deploy();
-    // console.log(`Contract deployed to address: ${stableSwapLPFactoryContract.target}`);
-    // writeToEnvFile("STABLE_SWAP_LP_FACTORY", stableSwapLPFactoryContract.target);
+    // const stableSwapLPFactoryContract = await await upgrades.deployProxy(stableSwapLPFactoryFactory);
+    // console.log(`Contract deployed to address: ${stableSwapLPFactoryContract.address}`);
+    // writeToEnvFile("STABLE_SWAP_LP_FACTORY", stableSwapLPFactoryContract.address);
 
     // const stableSwapThreePoolDeployerFactory = await ethers.getContractFactory("StableSwapThreePoolDeployer");
-    // const stableSwapThreePoolDeployerContract = await stableSwapThreePoolDeployerFactory.deploy();
-    // console.log(`Contract deployed to address: ${stableSwapThreePoolDeployerContract.target}`);
-    // writeToEnvFile("STABLE_SWAP_THREE_POOL_DEPLOYER", stableSwapThreePoolDeployerContract.target);
+    // const stableSwapThreePoolDeployerContract = await upgrades.deployProxy(stableSwapThreePoolDeployerFactory);
+    // console.log(`Contract deployed to address: ${stableSwapThreePoolDeployerContract.address}`);
+    // writeToEnvFile("STABLE_SWAP_THREE_POOL_DEPLOYER", stableSwapThreePoolDeployerContract.address);
 
-    // const stableSwapTwoPoolDeployerFactory = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
-    // const stableSwapTwoPoolDeployerContract = await stableSwapTwoPoolDeployerFactory.deploy();
-    // console.log(`Contract deployed to address: ${stableSwapTwoPoolDeployerContract.target}`);
-    // writeToEnvFile("STABLE_SWAP_TWO_POOL_DEPLOYER", stableSwapTwoPoolDeployerContract.target);
+    //  const stableSwapTwoPoolDeployerFactory = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
+    //  const stableSwapTwoPoolDeployerContract = await upgrades.deployProxy(stableSwapTwoPoolDeployerFactory);
+    //  console.log(`Contract deployed to address: ${stableSwapTwoPoolDeployerContract.address}`);
+    //  writeToEnvFile("STABLE_SWAP_TWO_POOL_DEPLOYER", stableSwapTwoPoolDeployerContract.address);
+
 
 
     // const SmartRouterHelperFactory=await ethers.getContractFactory("SmartRouterHelper");
     // const SmartRouterHelperContract=await SmartRouterHelperFactory.deploy();
-    // console.log(`Contract deployed to address: ${SmartRouterHelperContract.target}`);
-    // writeToEnvFile("SMART_ROUTER_HELPER_LIBRARY",SmartRouterHelperContract.target);
+    // console.log(`Contract deployed to address: ${SmartRouterHelperContract.address}`);
+    // writeToEnvFile("SMART_ROUTER_HELPER_LIBRARY",SmartRouterHelperContract.address);
 
-    // const StableSwapRouterFactory = await ethers.getContractFactory("StableSwapRouter",{
-    //   libraries:{
-    //       SmartRouterHelper: process.env.SMART_ROUTER_HELPER_LIBRARY,
-    //   }
-    // });
-    // const StableSwapRouterContract =await StableSwapRouterFactory.deploy(process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO);
-    // console.log(`Contract deployed to address: ${StableSwapRouterContract.target}`);
-    // writeToEnvFile("STABLE_SWAP_ROUTER", StableSwapRouterContract.target);
+//     const StableSwapRouterFactory = await ethers.getContractFactory("StableSwapRouter",{
+//       libraries:{
+//           SmartRouterHelper: process.env.SMART_ROUTER_HELPER_LIBRARY,
+//       }
+//     });
+    
+//     const StableSwapRouterContract =await upgrades.deployProxy.deployProxy(StableSwapRouterFactory, [process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO]);
+//     console.log(`Contract deployed to address: ${StableSwapRouterContract.address}`);
+//     writeToEnvFile("STABLE_SWAP_ROUTER", StableSwapRouterContract.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
