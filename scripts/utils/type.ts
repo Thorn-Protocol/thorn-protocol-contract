@@ -1,7 +1,5 @@
 type EthAddress = string;
 
-
-
 type bytes32 = string;
 type bytes = string | Array<any>;
 type uint256 = string;

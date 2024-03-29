@@ -67,7 +67,8 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         LPFactory = _LPFactory;
         SwapTwoPoolDeployer = _SwapTwoPoolDeployer;
         SwapThreePoolDeployer = _SwapThreePoolDeployer;
-
+         __Pausable_init_unchained();
+        __Ownable_init_unchained();
      }
 
     /**
