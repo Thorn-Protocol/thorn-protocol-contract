@@ -1,13 +1,43 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./StableSwapLP.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-contract StableSwapLPFactory is Ownable {
+contract StableSwapLPFactory is OwnableUpgradeable,PausableUpgradeable {
+
+
+    /*╔══════════════════════════════╗
+      ║          EVENT               ║
+      ╚══════════════════════════════╝*/
+     
     event NewStableSwapLP(address indexed swapLPContract, address tokenA, address tokenB, address tokenC);
 
-    constructor() {}
+
+
+    /*╔══════════════════════════════╗
+      ║          CONSTRUCTOR         ║
+      ╚══════════════════════════════╝*/
+
+    function initialize() public initializer {}
+
+
+    /*╔══════════════════════════════╗
+      ║      ADMIN FUNCTIONS         ║
+      ╚══════════════════════════════╝*/
+
+    /**
+        * @notice  onlyOwner
+        * @dev     pauseContract
+        */
+    function pauseContract() external onlyOwner(){ _pause();}
+
+    /**
+    * @notice  onlyOwner
+    * @dev     unpauseContract
+    */
+    function unPauseContract() external onlyOwner(){ _unpause();}
 
     /**
      * @notice createSwapLP

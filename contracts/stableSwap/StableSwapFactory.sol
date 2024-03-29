@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+
 import "../interfaces/IStableSwap.sol";
 import "../interfaces/IStableSwapLP.sol";
 import "../interfaces/IStableSwapDeployer.sol";
 import "../interfaces/IStableSwapLPFactory.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-contract StableSwapFactory is Ownable {
+contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
+
     struct StableSwapPairInfo {
         address swapContract;
         address token0;
@@ -27,15 +30,26 @@ contract StableSwapFactory is Ownable {
     mapping(address => mapping(address => StableSwapThreePoolPairInfo)) threePoolInfo;
     mapping(uint256 => address) public swapPairContract;
 
-    IStableSwapLPFactory public immutable LPFactory;
-    IStableSwapDeployer public immutable SwapTwoPoolDeployer;
-    IStableSwapDeployer public immutable SwapThreePoolDeployer;
+    IStableSwapLPFactory public LPFactory;
+    IStableSwapDeployer public  SwapTwoPoolDeployer;
+    IStableSwapDeployer public  SwapThreePoolDeployer;
 
     address constant ZEROADDRESS = address(0);
 
     uint256 public pairLength;
 
+
+    
+
+    /*╔══════════════════════════════╗
+      ║          EVENT               ║
+      ╚══════════════════════════════╝*/
+
     event NewStableSwapPair(address indexed swapContract, address tokenA, address tokenB, address tokenC, address LP);
+
+    /*╔══════════════════════════════╗
+      ║          CONSTRUCTOR         ║
+      ╚══════════════════════════════╝*/
 
     /**
      * @notice constructor
@@ -43,54 +57,34 @@ contract StableSwapFactory is Ownable {
      * _SwapTwoPoolDeployer: Swap two pool deployer
      * _SwapThreePoolDeployer: Swap three pool deployer
      */
-    constructor(
+
+     function initialize(
         IStableSwapLPFactory _LPFactory,
         IStableSwapDeployer _SwapTwoPoolDeployer,
         IStableSwapDeployer _SwapThreePoolDeployer
-    ) {
+
+     ) public initializer {
         LPFactory = _LPFactory;
         SwapTwoPoolDeployer = _SwapTwoPoolDeployer;
         SwapThreePoolDeployer = _SwapThreePoolDeployer;
-    }
 
-    // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
-        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-    }
+     }
 
-    function sortTokens(
-        address tokenA,
-        address tokenB,
-        address tokenC
-    )
-        internal
-        pure
-        returns (
-            address,
-            address,
-            address
-        )
-    {
-        require(tokenA != tokenB && tokenA != tokenC && tokenB != tokenC, "IDENTICAL_ADDRESSES");
-        address tmp;
-        if (tokenA > tokenB) {
-            tmp = tokenA;
-            tokenA = tokenB;
-            tokenB = tmp;
-        }
-        if (tokenB > tokenC) {
-            tmp = tokenB;
-            tokenB = tokenC;
-            tokenC = tmp;
-            if (tokenA > tokenB) {
-                tmp = tokenA;
-                tokenA = tokenB;
-                tokenB = tmp;
-            }
-        }
-        return (tokenA, tokenB, tokenC);
-    }
+    /**
+        * @notice  onlyOwner
+        * @dev     pauseContract
+        */
+    function pauseContract() external onlyOwner(){ _pause();}
+
+    /**
+    * @notice  onlyOwner
+    * @dev     unpauseContract
+    */
+    function unPauseContract() external onlyOwner(){ _unpause();}
+
+    /*╔══════════════════════════════╗
+      ║          ADMIN FUNCTIONS     ║
+      ╚══════════════════════════════╝*/
 
     /**
      * @notice createSwapPair
@@ -146,6 +140,51 @@ contract StableSwapFactory is Ownable {
         address swapContract = SwapThreePoolDeployer.createSwapPair(t0, t1, t2, _A, _fee, _admin_fee, msg.sender, LP);
         IStableSwapLP(LP).setMinter(swapContract);
         addPairInfoInternal(swapContract, t0, t1, t2, LP);
+    }
+
+
+
+    /*╔══════════════════════════════╗
+      ║          USER FUNCTIONS      ║
+      ╚══════════════════════════════╝*/
+
+    // returns sorted token addresses, used to handle return values from pairs sorted in this order
+    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    }
+
+    function sortTokens(
+        address tokenA,
+        address tokenB,
+        address tokenC
+    )
+        internal
+        pure
+        returns (
+            address,
+            address,
+            address
+        )
+    {
+        require(tokenA != tokenB && tokenA != tokenC && tokenB != tokenC, "IDENTICAL_ADDRESSES");
+        address tmp;
+        if (tokenA > tokenB) {
+            tmp = tokenA;
+            tokenA = tokenB;
+            tokenB = tmp;
+        }
+        if (tokenB > tokenC) {
+            tmp = tokenB;
+            tokenB = tokenC;
+            tokenC = tmp;
+            if (tokenA > tokenB) {
+                tmp = tokenA;
+                tokenA = tokenB;
+                tokenB = tmp;
+            }
+        }
+        return (tokenA, tokenB, tokenC);
     }
 
     function addPairInfoInternal(

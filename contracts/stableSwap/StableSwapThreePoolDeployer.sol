@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-// import "@openzeppelin/contracts/access/Ownable.sol";
+
 import "./StableSwapThreePool.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -9,22 +9,23 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     uint256 public constant N_COINS = 3;
 
-    /**
-     * @notice constructor
-     */
-    constructor() {}
-
-
     
 
+    /*╔══════════════════════════════╗
+      ║          CONSTRUCTOR         ║
+      ╚══════════════════════════════╝*/
     function initialize() public initializer {}
 
 
+    /*╔══════════════════════════════╗
+      ║          ADMIN FUNCTIONS     ║
+      ╚══════════════════════════════╝*/
 
     /**
         * @notice  onlyOwner
         * @dev     pauseContract
         */
+
     function pauseContract() external onlyOwner(){ _pause();}
 
     /**
@@ -33,44 +34,6 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     */
     function unPauseContract() external onlyOwner(){ _unpause();}
 
-    
-
-
-
-    // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(
-        address tokenA,
-        address tokenB,
-        address tokenC
-    )
-        
-        internal
-        pure 
-        returns (
-            address,
-            address,
-            address
-        )
-    {
-        require(tokenA != tokenB && tokenA != tokenC && tokenB != tokenC, "IDENTICAL_ADDRESSES");
-        address tmp;
-        if (tokenA > tokenB) {
-            tmp = tokenA;
-            tokenA = tokenB;
-            tokenB = tmp;
-        }
-        if (tokenB > tokenC) {
-            tmp = tokenB;
-            tokenB = tokenC;
-            tokenC = tmp;
-            if (tokenA > tokenB) {
-                tmp = tokenA;
-                tokenA = tokenB;
-                tokenB = tmp;
-            }
-        }
-        return (tokenA, tokenB, tokenC);
-    }
 
     /**
      * @notice createSwapPair
@@ -107,4 +70,47 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
 
         return swapContract;
     }
+
+    
+
+
+    /*╔══════════════════════════════╗
+      ║          FUNCTIONS           ║
+      ╚══════════════════════════════╝*/
+    // returns sorted token addresses, used to handle return values from pairs sorted in this order
+    function sortTokens(
+        address tokenA,
+        address tokenB,
+        address tokenC
+    )
+        
+        internal
+        pure 
+        returns (
+            address,
+            address,
+            address
+        )
+    {
+        require(tokenA != tokenB && tokenA != tokenC && tokenB != tokenC, "IDENTICAL_ADDRESSES");
+        address tmp;
+        if (tokenA > tokenB) {
+            tmp = tokenA;
+            tokenA = tokenB;
+            tokenB = tmp;
+        }
+        if (tokenB > tokenC) {
+            tmp = tokenB;
+            tokenB = tokenC;
+            tokenC = tmp;
+            if (tokenA > tokenB) {
+                tmp = tokenA;
+                tokenA = tokenB;
+                tokenB = tmp;
+            }
+        }
+        return (tokenA, tokenB, tokenC);
+    }
+
+    
 }
