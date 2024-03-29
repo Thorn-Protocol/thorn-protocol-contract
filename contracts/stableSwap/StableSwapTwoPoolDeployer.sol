@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./StableSwapTwoPool.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -9,11 +8,15 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract StableSwapTwoPoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     uint256 public constant N_COINS = 2;
 
-    /**
-     * @notice constructor
-     */
-    constructor() {}
+   /*╔══════════════════════════════╗
+     ║          CONSTRUCTOR         ║
+     ╚══════════════════════════════╝*/
+
     function initialize() public initializer {}
+
+   /*╔══════════════════════════════╗
+     ║          ADMIN FUNCTIONS     ║
+     ╚══════════════════════════════╝*/
 
 
      /**
@@ -27,14 +30,6 @@ contract StableSwapTwoPoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     * @dev     unpauseContract
     */
     function unPauseContract() external onlyOwner(){ _unpause();}
-
-    
-
-    // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
-        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-    }
 
     /**
      * @notice createSwapPair
@@ -69,4 +64,20 @@ contract StableSwapTwoPoolDeployer is OwnableUpgradeable,PausableUpgradeable {
 
         return swapContract;
     }
+
+
+
+   /*╔══════════════════════════════╗
+     ║          USER FUNCTIONS      ║
+     ╚══════════════════════════════╝*/
+
+    
+
+    // returns sorted token addresses, used to handle return values from pairs sorted in this order
+    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    }
+
+    
 }
