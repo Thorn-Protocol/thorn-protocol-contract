@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
 import "./StableSwapThreePool.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-contract StableSwapThreePoolDeployer is Ownable {
+contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     uint256 public constant N_COINS = 3;
 
     /**
@@ -12,14 +14,38 @@ contract StableSwapThreePoolDeployer is Ownable {
      */
     constructor() {}
 
+
+    
+
+    function initialize() public initializer {}
+
+
+
+    /**
+        * @notice  onlyOwner
+        * @dev     pauseContract
+        */
+    function pauseContract() external onlyOwner(){ _pause();}
+
+    /**
+    * @notice  onlyOwner
+    * @dev     unpauseContract
+    */
+    function unPauseContract() external onlyOwner(){ _unpause();}
+
+    
+
+
+
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(
         address tokenA,
         address tokenB,
         address tokenC
     )
+        
         internal
-        pure
+        pure 
         returns (
             address,
             address,
@@ -66,7 +92,7 @@ contract StableSwapThreePoolDeployer is Ownable {
         uint256 _admin_fee,
         address _admin,
         address _LP
-    ) external onlyOwner returns (address) {
+    ) external onlyOwner whenNotPaused returns (address) {
         require(_tokenA != address(0) && _tokenB != address(0) && _tokenA != _tokenB, "Illegal token");
         (address t0, address t1, address t2) = sortTokens(_tokenA, _tokenB, _tokenC);
         address[N_COINS] memory coins = [t0, t1, t2];
