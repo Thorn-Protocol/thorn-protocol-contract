@@ -3,7 +3,6 @@ import { expect, assert } from "chai";
 import * as dotenv from "dotenv";
 import { StableSwapFactory, StableSwapInfo, StableSwapLP, StableSwapTwoPool, StableSwapTwoPoolInfo, Token, StableSwapLPFactory, StableSwapTwoPoolDeployer, StableSwapThreePoolDeployer, StableSwapThreePoolInfo } from "../typechain-types";
 import { BigNumber} from "ethers";
-import { writeToEnvFile } from "../scripts/utils/helper";
 dotenv.config();
 
 describe("StableSwapTwoPool Contract Tests", function () {
@@ -34,20 +33,15 @@ describe("StableSwapTwoPool Contract Tests", function () {
     before(async function () {
         const LPFactory_CF = await ethers.getContractFactory("StableSwapLPFactory");
         LPFactory = await upgrades.deployProxy(LPFactory_CF);
-        writeToEnvFile("STABLE_SWAP_LP_FACTORY", LPFactory.address);
 
         const swapDeployerCF = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
         swapDeployer = await upgrades.deployProxy(swapDeployerCF);
-        writeToEnvFile("STABLE_SWAP_TWO_POOL_DEPLOYER", swapDeployer.address);
         
         const swapTriplePoolDeployerCF = await ethers.getContractFactory("StableSwapThreePoolDeployer");
         swapTriplePoolDeployer = await upgrades.deployProxy(swapTriplePoolDeployerCF);
-        writeToEnvFile("STABLE_SWAP_THREE_POOL_DEPLOYER", swapTriplePoolDeployer.address);
-
 
         const factoryCF = await ethers.getContractFactory("StableSwapFactory");
         factory = await upgrades.deployProxy(factoryCF, [LPFactory.address, swapDeployer.address, swapTriplePoolDeployer.address]);
-        writeToEnvFile("STABLE_SWAP_FACTORY", factory.address);
         
         let tx1 = await LPFactory.transferOwnership(factory.address);
         await tx1.wait();
@@ -58,12 +52,9 @@ describe("StableSwapTwoPool Contract Tests", function () {
 
         const BUSD_CF = await ethers.getContractFactory("Token");
         BUSD = await BUSD_CF.deploy("Binance USD", "BUSD", 18);
-        writeToEnvFile("BUSD", BUSD.address);
-
 
         const USDC_CF = await ethers.getContractFactory("Token");
         USDC = await USDC_CF.deploy("USD Coin", "USDC", 18);
-        writeToEnvFile("USDC", USDC.address);
  
         let tx4 = await BUSD.mint(user1, 1e10);
         await tx4.wait();
@@ -80,16 +71,12 @@ describe("StableSwapTwoPool Contract Tests", function () {
 
         const threePoolInfoSC_CF = await ethers.getContractFactory("StableSwapThreePoolInfo");
         threePoolInfoSC = await threePoolInfoSC_CF.deploy();
-        writeToEnvFile("STABLE_SWAP_THREE_POOL_INFO", threePoolInfoSC.address);
-
 
         const twoPoolInfoSC_CF = await ethers.getContractFactory("StableSwapTwoPoolInfo");
         twoPoolInfoSC = await twoPoolInfoSC_CF.deploy();
-        writeToEnvFile("STABLE_SWAP_TWO_POOL_INFO", twoPoolInfoSC.address);
 
         const poolInfoSC_CF = await ethers.getContractFactory("StableSwapInfo");
         poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address);
-        writeToEnvFile("STABLE_SWAP_INFO", poolInfoSC.address);
     });
 
     it("Check pair info between factory and swap smart contract", async () => {
@@ -109,17 +96,17 @@ describe("StableSwapTwoPool Contract Tests", function () {
         let tx2 = await USDC.approve(swap_BUSD_USDC.address, 1e6);
         await tx2.wait();
 
-        // await expect(
-        //     swap_BUSD_USDC.add_liquidity([0, 1e6], 0)
-        // ).to.be.revertedWith("Initial deposit requires all coins");
+        await expect(
+            swap_BUSD_USDC.add_liquidity([0, 1e6], 0)
+        ).to.be.reverted; //Initial deposit requires all coins
 
-        // await expect(
-        //     swap_BUSD_USDC.add_liquidity([1e6, 0], 0)
-        // ).to.be.revertedWith("Initial deposit requires all coins");
+        await expect(
+            swap_BUSD_USDC.add_liquidity([1e6, 0], 0)
+        ).to.be.reverted; //Initial deposit requires all coins
 
-        // await expect(
-        //     swap_BUSD_USDC.add_liquidity([1e6, 1e6], 2e7),
-        // ).to.be.revertedWith("Slippage screwed you");
+        await expect(
+            swap_BUSD_USDC.add_liquidity([1e6, 1e6], 2e7),
+        ).to.be.reverted; //Slippage screwed you
 
         const expect_LP_balance = 2e6;
         let tx = await swap_BUSD_USDC.add_liquidity([1e6, 1e6], expect_LP_balance);
