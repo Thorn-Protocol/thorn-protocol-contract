@@ -11,7 +11,10 @@ async function upgrade() {
         });
     const StableSwapRouterContract = await upgrades.upgradeProxy(
         process.env.STABLE_SWAP_ROUTER!,
-        StableSwapRouterFactory
+        StableSwapRouterFactory,
+        {
+            unsafeAllowLinkedLibraries: true
+        }
       );
     
     console.log("Stable swap router is upgraded sucess: ", StableSwapRouterContract.address);
