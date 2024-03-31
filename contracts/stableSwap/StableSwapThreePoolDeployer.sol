@@ -15,9 +15,11 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
       ║          CONSTRUCTOR         ║
       ╚══════════════════════════════╝*/
     function initialize() public initializer {
+
       __Ownable_init_unchained();
       __Pausable_init_unchained();
         
+
     }
 
 

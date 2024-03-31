@@ -21,8 +21,10 @@ contract StableSwapLPFactory is OwnableUpgradeable,PausableUpgradeable {
       ╚══════════════════════════════╝*/
 
     function initialize() public initializer {
+
       __Ownable_init_unchained();
       __Pausable_init_unchained();
+
 
     }
 

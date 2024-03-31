@@ -70,6 +70,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         __Ownable_init_unchained();
       __Pausable_init_unchained();
 
+
      }
 
     /*╔══════════════════════════════╗
