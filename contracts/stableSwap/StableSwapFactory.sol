@@ -114,6 +114,35 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         addPairInfoInternal(swapContract, t0, t1, ZEROADDRESS, LP);
     }
 
+     // returns sorted token addresses, used to handle return values from pairs sorted in this order
+    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    }
+
+
+     function addPairInfoInternal(
+        address _swapContract,
+        address _t0,
+        address _t1,
+        address _t2,
+        address _LP
+    ) internal {
+        StableSwapThreePoolPairInfo storage info = stableSwapPairInfo[_t0][_t1][_t2];
+        info.swapContract = _swapContract;
+        info.token0 = _t0;
+        info.token1 = _t1;
+        info.token2 = _t2;
+        info.LPContract = _LP;
+        swapPairContract[pairLength] = _swapContract;
+        pairLength += 1;
+        if (_t2 != ZEROADDRESS) {
+            addThreePoolPairInfo(_t0, _t1, _t2, info);
+        }
+
+        emit NewStableSwapPair(_swapContract, _t0, _t1, _t2, _LP);
+    }
+
     /**
      * @notice createThreePoolPair
      * @param _tokenA: Addresses of ERC20 conracts .
@@ -147,18 +176,18 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         addPairInfoInternal(swapContract, t0, t1, t2, LP);
     }
 
-
-
-    /*╔══════════════════════════════╗
-      ║          USER FUNCTIONS      ║
-      ╚══════════════════════════════╝*/
-
-    // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
-        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    function addPairInfo(address _swapContract) external onlyOwner {
+        IStableSwap swap = IStableSwap(_swapContract);
+        uint256 N_COINS = swap.N_COINS();
+        if (N_COINS == 2) {
+            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), ZEROADDRESS, swap.token());
+        } else if (N_COINS == 3) {
+            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), swap.coins(2), swap.token());
+        }
     }
 
+
+     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(
         address tokenA,
         address tokenB,
@@ -192,28 +221,8 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         return (tokenA, tokenB, tokenC);
     }
 
-    function addPairInfoInternal(
-        address _swapContract,
-        address _t0,
-        address _t1,
-        address _t2,
-        address _LP
-    ) internal {
-        StableSwapThreePoolPairInfo storage info = stableSwapPairInfo[_t0][_t1][_t2];
-        info.swapContract = _swapContract;
-        info.token0 = _t0;
-        info.token1 = _t1;
-        info.token2 = _t2;
-        info.LPContract = _LP;
-        swapPairContract[pairLength] = _swapContract;
-        pairLength += 1;
-        if (_t2 != ZEROADDRESS) {
-            addThreePoolPairInfo(_t0, _t1, _t2, info);
-        }
-
-        emit NewStableSwapPair(_swapContract, _t0, _t1, _t2, _LP);
-    }
-
+   
+     
     function addThreePoolPairInfo(
         address _t0,
         address _t1,
@@ -225,15 +234,12 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         threePoolInfo[_t1][_t2] = info;
     }
 
-    function addPairInfo(address _swapContract) external onlyOwner {
-        IStableSwap swap = IStableSwap(_swapContract);
-        uint256 N_COINS = swap.N_COINS();
-        if (N_COINS == 2) {
-            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), ZEROADDRESS, swap.token());
-        } else if (N_COINS == 3) {
-            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), swap.coins(2), swap.token());
-        }
-    }
+    
+    /*╔══════════════════════════════╗
+      ║         VIEW FUNCTIONS       ║
+      ╚══════════════════════════════╝*/
+
+    
 
     function getPairInfo(address _tokenA, address _tokenB) external view returns (StableSwapPairInfo memory info) {
         (address t0, address t1) = sortTokens(_tokenA, _tokenB);
