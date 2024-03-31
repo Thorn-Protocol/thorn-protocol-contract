@@ -61,7 +61,7 @@ export async function getGasPrice() {
 
 
 export async function getOption() {
-    const gasPrice = await getGasPrice();
+    const gasPrice = "10000000000"
     const nonce = await getMainOwner().getTransactionCount();
     const options = { gasPrice: gasPrice, nonce: nonce };
 

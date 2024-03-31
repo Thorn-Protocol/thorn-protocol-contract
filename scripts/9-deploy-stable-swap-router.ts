@@ -13,7 +13,10 @@ async function deploy() {
     });
     const StableSwapRouterContract =await upgrades.deployProxy(
         StableSwapRouterFactory, 
-        [process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO]
+        [process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO],
+        {
+            unsafeAllowLinkedLibraries: true
+        }
     );
     await StableSwapRouterContract.deployed();
     

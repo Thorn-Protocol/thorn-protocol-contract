@@ -1,8 +1,7 @@
 import { ethers, upgrades } from "hardhat";
 import * as dotenv from "dotenv";
 import { ERC20, StableSwapFactory, StableSwapInfo, StableSwapLPFactory, StableSwapRouter, StableSwapThreePool, StableSwapThreePoolDeployer, StableSwapThreePoolInfo, StableSwapTwoPool, StableSwapTwoPoolDeployer, StableSwapTwoPoolInfo, Token } from "../typechain-types";
-import { expect } from "chai";
-import { getOption, writeToEnvFile } from "../scripts/utils/helper";
+import { getOption } from "../scripts/utils/helper";
 dotenv.config();
 
 describe("test router", function () {
@@ -100,7 +99,7 @@ describe("test router", function () {
         await txBUSDApp.wait();
         let txUSDCApp = await USDC.approve(BUSD_USDC_address, 1000000n);
         await txUSDCApp.wait();
-        const txAddLiquidity = await stableSwap2Pool_BUSD_USDC.add_liquidity([1000000n, 1000000n], 0);
+        const txAddLiquidity = await stableSwap2Pool_BUSD_USDC.add_liquidity([1000000n, 1000000n], 0,await getOption());
         await txAddLiquidity.wait();
 
         //create BUSD and USDC and USDT pool and add liquidity
@@ -114,7 +113,7 @@ describe("test router", function () {
         await txUSDCApp2.wait();
         let txUSDTApp2 = await USDT.approve(BUSD_USDC_USDT_address, 1000000n);
         await txUSDTApp2.wait();
-        const txAddLiquidity2 = await stableSwap3Pool_BUSD_USDC_USDT.add_liquidity([1000000n, 1000000n, 1000000n],0);
+        const txAddLiquidity2 = await stableSwap3Pool_BUSD_USDC_USDT.add_liquidity([1000000n, 1000000n, 1000000n],0,await getOption());
         await txAddLiquidity2.wait();
 
 
@@ -146,10 +145,10 @@ describe("test router", function () {
         const BUSD_balances_before = await BUSD.balanceOf(process.env.PUBLIC_KEY);
         const USDC_balances_before = await USDC.balanceOf(process.env.PUBLIC_KEY);
 
-        let txBUSD = await BUSD.approve(stableSwapRouter.address, 100n);
+        let txBUSD = await BUSD.approve(stableSwapRouter.address, 1000n);
         await txBUSD.wait();
 
-        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address], [2], 100n, 0, process.env.PUBLIC_KEY);
+        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address], [2], 1000n, 0, process.env.PUBLIC_KEY,await getOption());
         await tx.wait();
 
         const BUSD_balances_after = await BUSD.balanceOf(process.env.PUBLIC_KEY);
@@ -166,10 +165,10 @@ describe("test router", function () {
         const BUSD_balances_before = await BUSD.balanceOf(process.env.PUBLIC_KEY);
         const USDT_balances_before = await USDT.balanceOf(process.env.PUBLIC_KEY);
 
-        let txBUSD = await BUSD.approve(stableSwapRouter.address, 100n);
+        let txBUSD = await BUSD.approve(stableSwapRouter.address, 1000n);
         await txBUSD.wait();
 
-        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], 100n, 0, process.env.PUBLIC_KEY);
+        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], 1000n, 0, process.env.PUBLIC_KEY,await getOption());
         await tx.wait();
 
         const BUSD_balances_after = await BUSD.balanceOf(process.env.PUBLIC_KEY);
@@ -182,13 +181,13 @@ describe("test router", function () {
 
     it("get BUSD to  be needed to get 100 USDC when you swap BUSD ->USDC in 2 pool ", async () => {
 
-        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address], [2], 100n, 10000n)
+        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address], [2], 1000n, 10000n)
         console.log("amount: ", tx);
     })
 
     it("get BUSD to  be needed to get 100 USDT when you swap BUSD ->USDC in 2 pool  and USDC->USDT in 3 pool", async () => {
 
-        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], 100n, 10000n)
+        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], 1000n, 10000n)
         console.log("amount: ", tx);
     })
 
