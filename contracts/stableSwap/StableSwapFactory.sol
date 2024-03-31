@@ -67,8 +67,14 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         LPFactory = _LPFactory;
         SwapTwoPoolDeployer = _SwapTwoPoolDeployer;
         SwapThreePoolDeployer = _SwapThreePoolDeployer;
+        __Ownable_init_unchained();
+      __Pausable_init_unchained();
 
      }
+
+    /*╔══════════════════════════════╗
+      ║          ADMIN FUNCTIONS     ║
+      ╚══════════════════════════════╝*/
 
     /**
         * @notice  onlyOwner
@@ -82,10 +88,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     */
     function unPauseContract() external onlyOwner(){ _unpause();}
 
-    /*╔══════════════════════════════╗
-      ║          ADMIN FUNCTIONS     ║
-      ╚══════════════════════════════╝*/
-
+    
     /**
      * @notice createSwapPair
      * @param _tokenA: Addresses of ERC20 conracts .
@@ -94,6 +97,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
      * @param _fee: Fee to charge for exchanges
      * @param _admin_fee: Admin fee
      */
+    
     function createSwapPair(
         address _tokenA,
         address _tokenB,

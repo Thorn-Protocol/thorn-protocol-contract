@@ -12,7 +12,10 @@ contract StableSwapTwoPoolDeployer is OwnableUpgradeable,PausableUpgradeable {
      ║          CONSTRUCTOR         ║
      ╚══════════════════════════════╝*/
 
-    function initialize() public initializer {}
+    function initialize() public initializer {
+        __Ownable_init_unchained();
+      __Pausable_init_unchained();
+    }
 
    /*╔══════════════════════════════╗
      ║          ADMIN FUNCTIONS     ║

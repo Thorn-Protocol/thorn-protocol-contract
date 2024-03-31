@@ -14,7 +14,11 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     /*╔══════════════════════════════╗
       ║          CONSTRUCTOR         ║
       ╚══════════════════════════════╝*/
-    function initialize() public initializer {}
+    function initialize() public initializer {
+      __Ownable_init_unchained();
+      __Pausable_init_unchained();
+        
+    }
 
 
     /*╔══════════════════════════════╗
@@ -75,7 +79,7 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
 
 
     /*╔══════════════════════════════╗
-      ║          FUNCTIONS           ║
+      ║          USER FUNCTIONS      ║
       ╚══════════════════════════════╝*/
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(

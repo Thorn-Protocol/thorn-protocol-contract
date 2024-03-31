@@ -33,6 +33,9 @@ contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGua
     ) public initializer {
         stableSwapFactory = _stableSwapFactory;
         stableSwapInfo = _stableSwapInfo;
+        __Ownable_init_unchained();
+        __ReentrancyGuard_init_unchained();
+      
     }
 
 
