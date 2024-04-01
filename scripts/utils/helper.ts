@@ -3,6 +3,7 @@ import { toChecksumAddress } from 'ethereumjs-util';
 import { EthAddress } from "./type";
 import {Wallet } from "ethers";
 import * as hre from "hardhat";
+import { network } from "hardhat";
 
 
 const adminKey = {
@@ -55,16 +56,23 @@ export const convertHexStringToAddress = (hexString: EthAddress): EthAddress => 
 
 
 export async function getGasPrice() {
-    let gasPrice =  (await getMainOwner().getFeeData()).maxPriorityFeePerGas
+    let gasPrice =  (await getMainOwner().getFeeData()).gasPrice;
     return gasPrice;
 };
 
 
 export async function getOption() {
-    const gasPrice = "10000000000"
+    const networkName = network.name;
+    let gasPrice;
+
+    if (networkName === "bscTestnet") {
+        gasPrice = "10000000000"; 
+    } 
+    if (networkName === "sapphireMainnet") {
+        gasPrice = await getGasPrice(); 
+    }
+
     const nonce = await getMainOwner().getTransactionCount();
     const options = { gasPrice: gasPrice, nonce: nonce };
-
-    return options
-
+    return options;
 }
