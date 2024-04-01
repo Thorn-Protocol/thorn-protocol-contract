@@ -3,6 +3,7 @@ import { expect, assert } from "chai";
 import * as dotenv from "dotenv";
 import { StableSwapFactory, StableSwapInfo, StableSwapLP, StableSwapTwoPool, StableSwapTwoPoolInfo, Token, StableSwapLPFactory, StableSwapTwoPoolDeployer, StableSwapThreePoolDeployer, StableSwapThreePoolInfo } from "../typechain-types";
 import { BigNumber} from "ethers";
+import { getOption } from "../scripts/utils/helper";
 dotenv.config();
 
 describe("StableSwapTwoPool Contract Tests", function () {
@@ -77,6 +78,19 @@ describe("StableSwapTwoPool Contract Tests", function () {
 
         const poolInfoSC_CF = await ethers.getContractFactory("StableSwapInfo");
         poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address);
+
+        // factory = await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY);
+        // BUSD = await ethers.getContractAt("Token", process.env.BUSD);
+        // USDC = await ethers.getContractAt("Token", process.env.USDC);
+        // let info = await factory.getPairInfo(BUSD.address, USDC.address);
+        // swap_BUSD_USDC = await ethers.getContractAt("StableSwapTwoPool",info.swapContract);
+        // LP_BUSD_USDC = await ethers.getContractAt("StableSwapLP", info.LPContract);
+        // token0 = await ethers.getContractAt("Token", info.token0);
+        // token1 = await ethers.getContractAt("Token", info.token1);
+        // threePoolInfoSC = await ethers.getContractAt("StableSwapThreePoolInfo",process.env.STABLE_SWAP_THREE_POOL_INFO);
+        // twoPoolInfoSC = await ethers.getContractAt("StableSwapTwoPoolInfo",process.env.STABLE_SWAP_TWO_POOL_INFO);
+        // poolInfoSC = await ethers.getContractAt("StableSwapInfo",process.env.STABLE_SWAP_INFO);
+
     });
 
     it("Check pair info between factory and swap smart contract", async () => {
@@ -109,7 +123,7 @@ describe("StableSwapTwoPool Contract Tests", function () {
         ).to.be.reverted; //Slippage screwed you
 
         const expect_LP_balance = 2e6;
-        let tx = await swap_BUSD_USDC.add_liquidity([1e6, 1e6], expect_LP_balance);
+        let tx = await swap_BUSD_USDC.add_liquidity([1e6, 1e6], expect_LP_balance, await getOption());
         await tx.wait();
         let LP_balance = await LP_BUSD_USDC.balanceOf(user1);
         let LP_totalSupply = await LP_BUSD_USDC.totalSupply();
@@ -131,7 +145,7 @@ describe("StableSwapTwoPool Contract Tests", function () {
           defaultToken0Amount,
           0,
         ]);
-        let tx = await swap_BUSD_USDC.add_liquidity([defaultToken0Amount, 0], expect_LP_balance0);
+        let tx = await swap_BUSD_USDC.add_liquidity([defaultToken0Amount, 0], expect_LP_balance0, await getOption());
         await tx.wait();
         let token0_balance_after = await swap_BUSD_USDC.balances(0);
         let token1_balance_after = await swap_BUSD_USDC.balances(1);
@@ -150,13 +164,11 @@ describe("StableSwapTwoPool Contract Tests", function () {
         
         let remove_LP_balance = 1e3;
         let expectCoins = await twoPoolInfoSC.calc_coins_amount(swap_BUSD_USDC.address, remove_LP_balance);
-        let tx = await swap_BUSD_USDC.remove_liquidity(remove_LP_balance, [0, 0]);
+        let tx = await swap_BUSD_USDC.remove_liquidity(remove_LP_balance, [0, 0], await getOption());
         await tx.wait();
         let LP_balance_after = await LP_BUSD_USDC.balanceOf(user1);
         let token0_balance_after = await token0.balanceOf(user1);
         let token1_balance_after = await token1.balanceOf(user1);
-        console.log(token0_balance_after);
-        console.log(token1_balance_after);
         //check lp balance
         assert.equal((LP_balance_before - LP_balance_after).toString(), remove_LP_balance.toString());
         //check check token0 balance
@@ -181,7 +193,7 @@ describe("StableSwapTwoPool Contract Tests", function () {
         let max_burn_amount = await swap_BUSD_USDC.calc_token_amount(remove_token_amounts, false);
         let maxburn_amount = BigNumber.from(max_burn_amount.toString())
         maxburn_amount = BigNumber.from(maxburn_amount.toString()).mul(SlippageMax).div(Slippage_PRECISION);
-        let tx =await swap_BUSD_USDC.remove_liquidity_imbalance(remove_token_amounts, maxburn_amount);
+        let tx =await swap_BUSD_USDC.remove_liquidity_imbalance(remove_token_amounts, maxburn_amount, await getOption());
         await tx.wait();
         let user_LP_balance_after = await LP_BUSD_USDC.balanceOf(user1);
         let LP_totalSupply_after = await LP_BUSD_USDC.totalSupply();
@@ -225,7 +237,7 @@ describe("StableSwapTwoPool Contract Tests", function () {
         let defaultTokenAmount = 1e3;
         let user_token1_balance_before = await token1.balanceOf(user1);
         let expect_Token1_amount = await swap_BUSD_USDC.calc_withdraw_one_coin(defaultTokenAmount, 1);
-        let tx = await swap_BUSD_USDC.remove_liquidity_one_coin(defaultTokenAmount, 1, expect_Token1_amount);
+        let tx = await swap_BUSD_USDC.remove_liquidity_one_coin(defaultTokenAmount, 1, expect_Token1_amount, await getOption());
         await tx.wait();
         let user_token1_balance_after = await token1.balanceOf(user1);
         assert((user_token1_balance_after - user_token1_balance_before).toString(), expect_Token1_amount.toString());
@@ -251,7 +263,7 @@ describe("StableSwapTwoPool Contract Tests", function () {
         let swapContract_token1_balance_before = await token1.balanceOf(swap_BUSD_USDC.address);
         let swap_token1_balance_before = await swap_BUSD_USDC.balances(1);
         let token1_admin_fee_before = await swap_BUSD_USDC.admin_balances(1);
-        let tx = await swap_BUSD_USDC.exchange(0, 1, exchange_token0_balance, expect_token1_balance);
+        let tx = await swap_BUSD_USDC.exchange(0, 1, exchange_token0_balance, expect_token1_balance, await getOption());
         await tx.wait();
         let user_token0_balance_after = await token0.balanceOf(user1);
         let token1_admin_fee_after = await swap_BUSD_USDC.admin_balances(1);
