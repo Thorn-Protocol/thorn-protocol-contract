@@ -6,6 +6,10 @@ import "./StableSwapThreePool.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
+
+/// @title stable swap three pool deployer
+/// @notice A deployer contract for executing the three pool deloyment 
+/// @dev This contract manages the deployment of pool, including sorting the pool tokens
 contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     uint256 public constant N_COINS = 3;
 

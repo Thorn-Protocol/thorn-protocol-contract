@@ -5,6 +5,10 @@ import "./StableSwapLP.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
+
+/// @title stable swap LP factory 
+/// @notice A LP factory contract for creating LP tokens for stable swap pools
+/// @dev This contract manages the creation of LP tokens for stable swap pools
 contract StableSwapLPFactory is OwnableUpgradeable,PausableUpgradeable {
 
 

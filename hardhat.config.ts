@@ -103,7 +103,7 @@ module.exports = {
       // gas: 25e6,
     },
     bscTestnet: {
-      url: "https://nd-741-200-374.p2pify.com/e47c8aefbd713f6684e9ee1a095c1052",
+      url: process.env.PROVIDER_URL,
       chainId: 97,
       gasPrice: 1e10,
       // gas: 2e7,
