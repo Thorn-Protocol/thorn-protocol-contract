@@ -9,6 +9,10 @@ import "../interfaces/IStableSwapLPFactory.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
+
+/// @title Stable swap factory 
+/// @notice A factory contract for creating new pool and providing pool information 
+/// @dev  This contract manages the creations of stable swap pools and provides access to their information
 contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
 
     struct StableSwapPairInfo {

@@ -11,6 +11,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /// @title Stable Swap Router
+/// @notice A router contract for excuting stable swaps between different stablecoins pairs through mutiple pools
+///         It allows users to swap stable coins efficiently 
+/// @dev    This contract manages stable swap functionality, including executing swaps and caculating swap amounts
+
 contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGuardUpgradeable  {
     address public stableSwapFactory;
     address public stableSwapInfo;
