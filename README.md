@@ -19,7 +19,7 @@ $ npm install --save-dev --force
 
 
 ## Overview 
-Thorn is an exchange liquidity pool on Sapphire designed for extremely efficient stablecoin trading and low risk, supplemental fee income for liquidity provdiers, without an oppotunity cost.
+Thorn is an exchange liquidity pool on Sapphire designed for extremely efficient stablecoin trading and low risk, supplemental fee income for liquidity providers, without an opportunity cost.
 
 Thorn allows user to trade between correlated cryptocurrencies with a low slippage, low fee algorithm and ensures privacy through Sapphire's confidential state features.
 
@@ -33,27 +33,27 @@ There are 5 main contract types:
 
 ## Deployment
 
-**Compile contract**  before deploying .
+**Compile contract**  before deploying
 ```
-hardhat complie
+npx hardhat complie
 ```
 **Deploy  4 contracts** in the following order 
 ```
-hardhat run scripts/deploy-upgrades/1-deploy-LP-factory.ts
-hardhat run scripts/deploy-upgrades/2-deploy-two-pool-deployer
-hardhat run scripts/deploy-upgrades/3-deploy-three-pool-deployer
-hardhat run scripts/deploy-upgrades/4-deploy-stable-swap-factory 
+npx hardhat run scripts/deploy-upgrades/1-deploy-LP-factory.ts
+npx hardhat run scripts/deploy-upgrades/2-deploy-two-pool-deployer
+npx hardhat run scripts/deploy-upgrades/3-deploy-three-pool-deployer
+npx hardhat run scripts/deploy-upgrades/4-deploy-stable-swap-factory 
 ```
-After completely deploying 4 contracts, navigate to the contract files. Comment out the **deploy** function in **main**, and uncomment **setup** function. Then, run the above commands.
+After completely deploying 4 contracts, navigate to the contract deploy files excluding **stable swap factory** deploy file. Comment out the **deploy** function in **main**, and uncomment **setup** function. Then, run the above commands.
 
-Once the contracts are fully set up, procceed with the delpoyment: 
+Once the contracts are fully set up, procceed with the deployment: 
 
 ```
-hardhat run scripts/deploy-upgrades/5-deploy-two-pool-info.ts
-hardhat run scripts/deploy-upgrades/6-deploy-three-pool-info.ts
-hardhat run scripts/deploy-upgrades/7-deploy-stable-swap-info.ts
-hardhat run scripts/deploy-upgrades/8-deploy-smart-router-helper.ts
-hardhat run scripts/deploy-upgrades/9-deploy-stable-swap-router.ts
+npx hardhat run scripts/deploy-upgrades/5-deploy-two-pool-info.ts
+npx hardhat run scripts/deploy-upgrades/6-deploy-three-pool-info.ts
+npx hardhat run scripts/deploy-upgrades/7-deploy-stable-swap-info.ts
+npx hardhat run scripts/deploy-upgrades/8-deploy-smart-router-helper.ts
+npx hardhat run scripts/deploy-upgrades/9-deploy-stable-swap-router.ts
 ```
 
 ## Testing and Development
@@ -61,7 +61,7 @@ hardhat run scripts/deploy-upgrades/9-deploy-stable-swap-router.ts
 ### Organization and Workflow
 
 * New pools are creating through Create function in SwapFactory contract 
-* Once created, the contracts information is taken from  GetInfo function in SwapFactory 
+* Once created, the pools information is taken from  GetInfo function in SwapFactory 
 
 
 ### Running the Tests
