@@ -114,7 +114,11 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         addPairInfoInternal(swapContract, t0, t1, ZEROADDRESS, LP);
     }
 
-     // returns sorted token addresses, used to handle return values from pairs sorted in this order
+    /**
+    * @dev Sorts three token addresses in a consistent order.
+    * @param tokenA: Addresses of ERC20 conracts .
+    * @param tokenB: Addresses of ERC20 conracts .
+    */
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
         require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
@@ -187,7 +191,12 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     }
 
 
-     // returns sorted token addresses, used to handle return values from pairs sorted in this order
+     /**
+    * @dev Sorts three token addresses in a consistent order.
+    * @param tokenA: Addresses of ERC20 conracts .
+    * @param tokenB: Addresses of ERC20 conracts .
+    * @param tokenC: Addresses of ERC20 conracts .
+    */
     function sortTokens(
         address tokenA,
         address tokenB,
@@ -240,7 +249,11 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
       ╚══════════════════════════════╝*/
 
     
-
+    /**
+    * @dev Retrieves information of two pool.
+    * @param _tokenA : Addresses of ERC20 conracts.
+    * @param _tokenB : Addresses of ERC20 conracts.
+    */
     function getPairInfo(address _tokenA, address _tokenB) external view returns (StableSwapPairInfo memory info) {
         (address t0, address t1) = sortTokens(_tokenA, _tokenB);
         StableSwapThreePoolPairInfo memory pairInfo = stableSwapPairInfo[t0][t1][ZEROADDRESS];
@@ -250,6 +263,11 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         info.LPContract = pairInfo.LPContract;
     }
 
+    /**
+    * @dev Retrieves information of three pool.
+    * @param _tokenA : Addresses of ERC20 conracts.
+    * @param _tokenB : Addresses of ERC20 conracts.
+    */
     function getThreePoolPairInfo(address _tokenA, address _tokenB)
         external
         view

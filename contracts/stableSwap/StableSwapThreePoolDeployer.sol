@@ -77,19 +77,17 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
         return swapContract;
     }
 
-    
-
-
-    /*╔══════════════════════════════╗
-      ║          USER FUNCTIONS      ║
-      ╚══════════════════════════════╝*/
-    // returns sorted token addresses, used to handle return values from pairs sorted in this order
+     /**
+    * @dev Sorts three token addresses in a consistent order.
+    * @param tokenA: Addresses of ERC20 conracts .
+    * @param tokenB: Addresses of ERC20 conracts .
+    * @param tokenC: Addresses of ERC20 conracts .
+    */
     function sortTokens(
         address tokenA,
         address tokenB,
         address tokenC
     )
-        
         internal
         pure 
         returns (
@@ -116,7 +114,5 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
             }
         }
         return (tokenA, tokenB, tokenC);
-    }
-
-    
+    }  
 }

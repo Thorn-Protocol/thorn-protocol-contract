@@ -3,33 +3,59 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../interfaces/IStableSwap.sol";
 
+/**
+ * @title StableSwapThreePoolInfo
+ * @notice Contract for retrieving information about stable swaps with three coins
+ * @dev This contract provides utility functions for retrieving information and calculating fees related to stable swaps with three coins.
+ */
 contract StableSwapThreePoolInfo {
     uint256 public constant N_COINS = 3;
     uint256 public constant FEE_DENOMINATOR = 1e10;
     uint256 public constant PRECISION = 1e18;
 
+    /**
+     * @notice Get the LP token of the two pool
+     * @param _swap Address of the stable swap contract
+     */
     function token(address _swap) public view returns (IERC20) {
         return IERC20(IStableSwap(_swap).token());
     }
 
+    /**
+     * @notice Get the balances of each coin in the pool
+     * @param _swap Address of the stable swap contract
+     */
     function balances(address _swap) public view returns (uint256[N_COINS] memory swapBalances) {
         for (uint256 i = 0; i < N_COINS; i++) {
             swapBalances[i] = IStableSwap(_swap).balances(i);
         }
     }
 
+    /**
+     * @notice Get the exchange rates for each coin in the pool
+     * @param _swap Address of the stable swap contract
+     */
     function RATES(address _swap) public view returns (uint256[N_COINS] memory swapRATES) {
         for (uint256 i = 0; i < N_COINS; i++) {
             swapRATES[i] = IStableSwap(_swap).RATES(i);
         }
     }
 
+    /**
+     * @notice Get the precision multipliers for each coin in the pool
+     * @param _swap Address of the stable swap contract
+     */
     function PRECISION_MUL(address _swap) public view returns (uint256[N_COINS] memory swapPRECISION_MUL) {
         for (uint256 i = 0; i < N_COINS; i++) {
             swapPRECISION_MUL[i] = IStableSwap(_swap).PRECISION_MUL(i);
         }
     }
 
+    /**
+     * @notice Calculate the amount of each coin received when removing liquidity 
+     * @param _swap Address of the stable swap contract
+     * @param _amount Amount of LP tokens to burn in the withdrawal
+     */
     function calc_coins_amount(address _swap, uint256 _amount) external view returns (uint256[N_COINS] memory) {
         uint256 total_supply = token(_swap).totalSupply();
         uint256[N_COINS] memory amounts;
@@ -41,6 +67,11 @@ contract StableSwapThreePoolInfo {
         return amounts;
     }
 
+    /**
+    * @dev Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
+    * @param _balances Array of balances to calculate virtual balances from.
+    * @param amp Amplification factor of the pool.
+    */
     function get_D_mem(
         address _swap,
         uint256[N_COINS] memory _balances,
@@ -49,6 +80,11 @@ contract StableSwapThreePoolInfo {
         return get_D(_xp_mem(_swap, _balances), amp);
     }
 
+    /**
+     * @notice Calculate the amount of LP token received when adding liquidity
+     * @param _swap Address of the stable swap contract
+     * @param amounts Array of amounts for each coin being deposited
+     */
     function get_add_liquidity_mint_amount(address _swap, uint256[N_COINS] memory amounts)
         external
         view
@@ -110,6 +146,11 @@ contract StableSwapThreePoolInfo {
         return mint_amount;
     }
 
+    /**
+     * @notice Calculate the fee charged when adding liquidity
+     * @param _swap Address of the stable swap contract
+     * @param amounts Array of amounts for each coin being deposited
+     */
     function get_add_liquidity_fee(address _swap, uint256[N_COINS] memory amounts)
         external
         view
@@ -156,6 +197,11 @@ contract StableSwapThreePoolInfo {
         }
     }
 
+    /**
+     * @notice Calculate the fee charged when removing liquidity
+     * @param _swap Address of the stable swap contract
+     * @param amounts Array of amounts for each coin being withdrawn
+     */
     function get_remove_liquidity_imbalance_fee(address _swap, uint256[N_COINS] memory amounts)
         external
         view
@@ -187,6 +233,10 @@ contract StableSwapThreePoolInfo {
         }
     }
 
+    /**
+    * @dev Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
+    * @param _balances The array of balances to calculate virtual balances from.
+    */
     function _xp_mem(address _swap, uint256[N_COINS] memory _balances)
         public
         view
@@ -198,6 +248,12 @@ contract StableSwapThreePoolInfo {
         }
     }
 
+    /**
+    * @dev Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
+    * @param xp Array of virtual balances for the pool, scaled by precision.
+    * @param amp Amplification factor of the pool.
+    * @return D The total value of the pool's assets (invariant D).
+    */
     function get_D(uint256[N_COINS] memory xp, uint256 amp) internal pure returns (uint256) {
         uint256 S;
         for (uint256 i = 0; i < N_COINS; i++) {
@@ -231,6 +287,14 @@ contract StableSwapThreePoolInfo {
         return D;
     }
 
+    /**
+    * @notice get_y
+    * @dev Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
+    * @param i Index of coin to swap from.
+    * @param j Index of coin to swap to
+    * @param x Amount of coin i to swap
+    * @param xp_ The array of virtual balances for the pool, scaled by precision.
+    */
     function get_y(
         address _swap,
         uint256 i,
@@ -279,6 +343,15 @@ contract StableSwapThreePoolInfo {
         return y;
     }
 
+    /**
+    * @notice Calculates the exchange fee and admin fee for a token swap
+    * @param _swap Address of the stable swap contract
+    * @param i Index of the token to swap from
+    * @param j Index of the token to swap to
+    * @param dx Amount of token to swap from
+    * @return exFee Exchange fee for the swap
+    * @return exAdminFee Admin fee for the swap
+    */
     function get_exchange_fee(
         address _swap,
         uint256 i,
@@ -303,6 +376,9 @@ contract StableSwapThreePoolInfo {
         exAdminFee = dy_admin_fee;
     }
 
+    /**
+     * @dev Calculates the array of virtual balances for the pool, scaled by precision
+     */
     function _xp(address _swap) internal view returns (uint256[N_COINS] memory result) {
         result = RATES(_swap);
         for (uint256 i = 0; i < N_COINS; i++) {
@@ -310,6 +386,13 @@ contract StableSwapThreePoolInfo {
         }
     }
 
+    /**
+    * @dev Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
+    * @param A_ The value of parameter A.
+    * @param i The index of the coin for which the output amount is calculated.
+    * @param xp The array of virtual balances for the pool, scaled by precision.
+    * @param D The new value of invariant D.
+    */
     function get_y_D(
         uint256 A_,
         uint256 i,
@@ -363,6 +446,11 @@ contract StableSwapThreePoolInfo {
         return y;
     }
 
+    /**
+     * @notice Calculate the amount received when withdrawing a single coin.
+     * @param _token_amount: Amount of LP tokens to burn in the withdrawal
+     * @param i: Index value of the coin to withdraw
+     */
     function _calc_withdraw_one_coin(
         address _swap,
         uint256 _token_amount,
@@ -397,6 +485,12 @@ contract StableSwapThreePoolInfo {
         return (dy, dy_0 - dy);
     }
 
+    /**
+     * @notice Calculate the fee charged when removing liquidity for a single coin
+     * @param _swap Address of the stable swap contract
+     * @param _token_amount Amount of liquidity tokens being withdrawn
+     * @param i Index of the coin to withdraw
+     */
     function get_remove_liquidity_one_coin_fee(
         address _swap,
         uint256 _token_amount,
@@ -407,6 +501,14 @@ contract StableSwapThreePoolInfo {
         adminFee = (dy_fee * swap.admin_fee()) / FEE_DENOMINATOR;
     }
 
+    /**
+     * @notice get amountIn  with the given amount out  
+     * @param _swap: Addresses of pool conracts .
+     * @param i: the token index.
+     * @param j: the token index 
+     * @param  dy :  the given amount out
+     * @param max_dx: the maximum of amount in 
+     */
     function get_dx(
         address _swap,
         uint256 i,

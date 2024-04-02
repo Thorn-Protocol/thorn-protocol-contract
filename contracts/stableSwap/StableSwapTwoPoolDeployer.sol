@@ -70,16 +70,14 @@ contract StableSwapTwoPoolDeployer is OwnableUpgradeable,PausableUpgradeable {
         return swapContract;
     }
 
-       // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+    /**
+    * @dev Sorts two token addresses in a consistent order.
+    * @param tokenA: Addresses of ERC20 conracts .
+    * @param tokenB: Addresses of ERC20 conracts .
+    */
+     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
         require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
     }
 
-
-
-    
-
- 
-    
 }

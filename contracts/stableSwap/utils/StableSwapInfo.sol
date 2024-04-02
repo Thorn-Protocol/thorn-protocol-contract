@@ -4,6 +4,11 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../interfaces/IStableSwapInfo.sol";
 import "../../interfaces/IStableSwap.sol";
 
+/**
+ * @title StableSwapInfo
+ * @notice Contract for retrieving information about stable swaps
+ * @dev This contract provides functions to retrieve information about stable swaps with 2 or 3 coins
+ */
 contract StableSwapInfo {
     IStableSwapInfo public immutable twoPoolInfo;
     IStableSwapInfo public immutable threePoolInfo;
