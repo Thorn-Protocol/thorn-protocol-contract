@@ -17,17 +17,17 @@ async function deploy() {
 }
 
 async function setUp() {
-    var three_pool_deployer = await ethers.getContractAt("StableSwapThreePoolDeployer", process.env.STABLE_SWAP_TWO_POOL_DEPLOYER);
+    var three_pool_deployer = await ethers.getContractAt("StableSwapThreePoolDeployer", process.env.STABLE_SWAP_THREE_POOL_DEPLOYER);
     var stable_swap_factory_address = process.env.STABLE_SWAP_FACTORY!;
 
     var tx = await three_pool_deployer.transferOwnership(stable_swap_factory_address);
-    console.log("transferOwnership success!", tx.transactionHash);
+    console.log("transferOwnership success!", tx.hash);
 }
 
 
 async function main() {
     // await deploy();
-    // await setUp();
+    await setUp();
 }
 
 main()

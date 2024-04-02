@@ -22,8 +22,7 @@ async function deploy() {
 }
 
 async function main() {
-    // await deploy();
-    // await setUp();
+    await deploy();
 }
 
 main()

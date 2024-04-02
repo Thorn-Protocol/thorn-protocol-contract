@@ -21,13 +21,13 @@ async function setUp() {
     var stable_swap_factory_address = process.env.STABLE_SWAP_FACTORY!;
 
     var tx = await LP_factory.transferOwnership(stable_swap_factory_address);
-    console.log("transferOwnership success!", tx.transactionHash);
+    console.log("transferOwnership success!", tx.hash);
 }
 
 
 async function main() {
-    await deploy();
-    // await setUp();
+    // await deploy();
+    await setUp();
 }
 
 main()
