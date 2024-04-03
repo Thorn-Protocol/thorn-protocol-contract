@@ -3,9 +3,12 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/// @title StableSwapLP
-/// @notice A contract representing LP (Liquidity Provider) tokens for a stable swap pool
-/// @dev This contract manages the minting and burning of LP tokens
+/**
+ * @title StableSwapLP
+ * @notice A contract representing LP (Liquidity Provider) tokens for a stable swap pool
+ * @dev This contract manages the minting and burning of LP tokens
+ */
+
 contract StableSwapLP is ERC20 {
     address public minter;
 

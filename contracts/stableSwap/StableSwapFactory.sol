@@ -9,10 +9,12 @@ import "../interfaces/IStableSwapLPFactory.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
+/**
+ * @title Stable swap factory 
+ * @notice A factory contract for creating new pool and providing pool information 
+ * @dev  This contract manages the creations of stable swap pools and provides access to their information
+ */
 
-/// @title Stable swap factory 
-/// @notice A factory contract for creating new pool and providing pool information 
-/// @dev  This contract manages the creations of stable swap pools and provides access to their information
 contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
 
     struct StableSwapPairInfo {
@@ -82,9 +84,9 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
       ╚══════════════════════════════╝*/
 
     /**
-        * @notice  onlyOwner
-        * @dev     pauseContract
-        */
+    * @notice  onlyOwner
+    * @dev     pauseContract
+    */
     function pauseContract() external onlyOwner(){ _pause();}
 
     /**
@@ -119,7 +121,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     }
 
     /**
-    * @dev Sorts three token addresses in a consistent order.
+    * @notice Sorts three token addresses in a consistent order.
     * @param tokenA: Addresses of ERC20 conracts .
     * @param tokenB: Addresses of ERC20 conracts .
     */
@@ -196,7 +198,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
 
 
      /**
-    * @dev Sorts three token addresses in a consistent order.
+    * @notice Sorts three token addresses in a consistent order.
     * @param tokenA: Addresses of ERC20 conracts .
     * @param tokenB: Addresses of ERC20 conracts .
     * @param tokenC: Addresses of ERC20 conracts .
@@ -254,7 +256,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
 
     
     /**
-    * @dev Retrieves information of two pool.
+    * @notice Retrieves information of two pool.
     * @param _tokenA : Addresses of ERC20 conracts.
     * @param _tokenB : Addresses of ERC20 conracts.
     */
@@ -268,7 +270,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     }
 
     /**
-    * @dev Retrieves information of three pool.
+    * @notice Retrieves information of three pool.
     * @param _tokenA : Addresses of ERC20 conracts.
     * @param _tokenB : Addresses of ERC20 conracts.
     */

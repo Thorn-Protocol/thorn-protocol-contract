@@ -7,9 +7,12 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../interfaces/IStableSwapLP.sol";
 
-/// @title StableSwapThreePool
-/// @notice This contract facilitates liquidity addition, stable swapping, and liquidity removal in a stable swap system with three pools.
-/// @dev It includes functions for adding liquidity, stable swapping, and removing liquidity, as well as parameter calculation for main operations.
+/**
+ * @title StableSwapThreePool
+ * @notice This contract facilitates liquidity addition, stable swapping, and liquidity removal in a stable swap system with three pools.
+ * @notice It includes functions for adding liquidity, stable swapping, and removing liquidity, as well as parameter calculation for main operations.
+ */
+
 contract StableSwapThreePool is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -17,13 +20,13 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
       ║          CONSTANT            ║
       ╚══════════════════════════════╝*/
 
-    uint256 public constant N_COINS = 3;
+    uint256 public constant N_COINS = 3; //The number of coins within the pool
 
-    uint256 public constant MAX_DECIMAL = 18;
-    uint256 public constant FEE_DENOMINATOR = 1e10;
-    uint256 public constant PRECISION = 1e18;
-    uint256[N_COINS] public PRECISION_MUL;
-    uint256[N_COINS] public RATES;
+    uint256 public constant MAX_DECIMAL = 18; //Maximum number of decimal places for the token balances
+    uint256 public constant FEE_DENOMINATOR = 1e10; //The denominator used to calculate the fee, fees are expressed as a fraction of 1e10
+    uint256 public constant PRECISION = 1e18; // The precision to which values are calculated, accurate up to 18 decimal places
+    uint256[N_COINS] public PRECISION_MUL; //Array of integers that coin balances are multiplied by in order to adjust their precision to 18 decimal places
+    uint256[N_COINS] public RATES; //Array of integers indicating the relative value of `1e18` tokens for each stablecoin
 
     uint256 public constant MAX_ADMIN_FEE = 1e10;
     uint256 public constant MAX_FEE = 5e9;
@@ -169,9 +172,8 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
       ╚══════════════════════════════╝*/
 
     /**
-    * @dev Retrieves the current value of parameter A.
+    * @notice Retrieves the current value of parameter A.
     * Handles ramping A up or down over time if specified.
-    * @return The current value of parameter A.
     */
     function get_A() internal view returns (uint256) {
         //Handle ramping A up or down
@@ -193,7 +195,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
      /**
-     * @dev Getter for the amplification coefficient of the pool.
+     * @notice Getter for the amplification coefficient of the pool.
      * The amplification coefficient A determines a pool’s tolerance for imbalance between the assets within it.
      */
     function A() external view returns (uint256) {
@@ -201,7 +203,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Calculates the array of virtual balances for the pool, scaled by precision
+     * @notice Calculates the array of virtual balances for the pool, scaled by precision
      */
     function _xp() internal view returns (uint256[N_COINS] memory result) {
         result = RATES;
@@ -211,7 +213,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
+    * @notice Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
     * @param _balances The array of balances to calculate virtual balances from.
     */
     function _xp_mem(uint256[N_COINS] memory _balances) internal view returns (uint256[N_COINS] memory result) {
@@ -222,7 +224,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
      /**
-    * @dev Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
+    * @notice Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
     * @param xp Array of virtual balances for the pool, scaled by precision.
     * @param amp Amplification factor of the pool.
     * @return D The total value of the pool's assets (invariant D).
@@ -261,7 +263,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
+    * @notice Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
     * @param _balances Array of balances to calculate virtual balances from.
     * @param amp Amplification factor of the pool.
     */
@@ -270,7 +272,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Current virtual price of the pool LP token relative to the underlying pool assets.
+    * @notice Current virtual price of the pool LP token relative to the underlying pool assets.
     * Can get the absolute price by multiplying it with the price of the underlying assets.
     * The method returns virtual_price as an integer with 1e18 precision.
     */
@@ -289,8 +291,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice calc_token_amount
-     * @dev Calculate addition or reduction in token supply from a deposit or withdrawal
+     * @notice Calculate addition or reduction in token supply from a deposit or withdrawal
      * Returns the expected amount of LP tokens received. 
      * This calculation accounts for slippage, but not fees.
      * @param amounts: Amount of each coin being deposited
@@ -325,8 +326,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @notice get_y
-    * @dev Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
+    * @notice Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
     * @param i Index of coin to swap from.
     * @param j Index of coin to swap to
     * @param x Amount of coin i to swap
@@ -381,8 +381,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice get_dy
-     * @dev Get the amount of coin j one would receive for swapping dx of coin i.
+     * @notice Get the amount of coin j one would receive for swapping dx of coin i.
      * @param i: Index of coin to swap from
      * @param j: Index of coin to swap to
      * @param dx: Amount of coin i to swap
@@ -404,8 +403,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @notice get_dy_underlying
-    * @dev Get the amount of coin j one would receive for swapping dx of coin i, in underlying units.
+    * @notice Get the amount of coin j one would receive for swapping dx of coin i, in underlying units.
     * @param i Index of coin to swap from
     * @param j Index of coin to swap to
     * @param dx Amount of coin i to swap
@@ -427,7 +425,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
+    * @notice Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
     * @param A_ The value of parameter A.
     * @param i The index of the coin for which the output amount is calculated.
     * @param xp The array of virtual balances for the pool, scaled by precision.
@@ -520,8 +518,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice calc_withdraw_one_coin
-     * @dev Calculate the amount received when withdrawing a single coin.
+     * @notice Calculate the amount received when withdrawing a single coin.
      * @param _token_amount: Amount of LP tokens to burn in the withdrawal
      * @param i: Index value of the coin to withdraw
      */
@@ -535,8 +532,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
       ╚══════════════════════════════╝*/
 
     /**
-     * @notice add_liquidity
-     * @dev Deposit coins into the pool
+     * @notice Deposit coins into the pool
      * @param amounts: Amount of each coin being deposited
      * @param min_mint_amount: Minimum amount of LP tokens to mint from the deposit
      */
@@ -618,8 +614,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice exchange
-     * @dev Perform an exchange between two coins.
+     * @notice Perform an exchange between two coins.
      * @param i: Index of coin to swap from
      * @param j: Index of coin to swap to
      * @param dx: Amount of coin i to swap
@@ -669,8 +664,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
      /**
-     * @notice remove_liquidity
-     * @dev Withdraw coins from the pool
+     * @notice Withdraw coins from the pool
      * @param _amount: Quantity of LP tokens to burn in the withdrawal
      * @param min_amounts: Minimum amounts of underlying coins to receive
      */
@@ -693,8 +687,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice remove_liquidity_imbalance
-     * @dev Withdraw coins from the pool in an imbalanced amount
+     * @notice Withdraw coins from the pool in an imbalanced amount
      * @param amounts: List of amounts of underlying coins to withdraw
      * @param max_burn_amount: Maximum amount of LP token to burn in the withdrawal
      */
@@ -749,8 +742,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
      /**
-     * @notice remove_liquidity_one_coin
-     * @dev Withdraw a single coin from the pool
+     * @notice Withdraw a single coin from the pool
      * @param _token_amount: Amount of LP tokens to burn in the withdrawal
      * @param i: Index value of the coin to withdraw
      * @param min_amount: Minimum amount of coin to receive
@@ -773,7 +765,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Internal function to transfer tokens using function "safeTransfer" of IERC20.
+    * @notice Internal function to transfer tokens using function "safeTransfer" of IERC20.
     * @param coin_address The address of the token to transfer.
     * @param value The amount of tokens to transfer.
     */
@@ -786,7 +778,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Internal function to transfer tokens using function "safeTransferFrom" of IERC20.
+    * @notice Internal function to transfer tokens using function "safeTransferFrom" of IERC20.
     * @param coin_address The address of the token to transfer.
     * @param value The amount of tokens to transfer.
     */
@@ -799,7 +791,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Internal function to safely transfer ROSE tokens.
+    * @notice Internal function to safely transfer ROSE tokens.
     * @param to The address to transfer the ROSE tokens to.
     * @param value The amount of ROSE tokens to transfer.
     */
@@ -813,7 +805,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
      ╚══════════════════════════════╝*/
 
     /**
-    * @dev set the gas limit for transferring ROSE tokens.
+    * @notice set the gas limit for transferring ROSE tokens.
     * @param _rose_gas The gas limit to be set.
     * The gas limit should be within the acceptable range defined by MIN_ROSE_gas and MAX_ROSE_gas.
     */
@@ -824,8 +816,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice ramp_A
-     * @dev Ramp A up or down by setting a new A to take effect at a future point in time.
+     * @notice Ramp A up or down by setting a new A to take effect at a future point in time.
      * @param _future_A: New future value of A
      * @param _future_time: Timestamp at which new A should take effect
      */
@@ -849,8 +840,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice stop_rampget_A
-     * @dev Stop ramping A up or down and sets A to current A.
+     * @notice Stop ramping A up or down and sets A to current A.
      */
     function stop_rampget_A() external onlyOwner {
         uint256 current_A = get_A();
@@ -863,9 +853,8 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit StopRampA(current_A, block.timestamp);
     }
 
-      /**
-     * @notice commit_new_fee
-     * @dev The method commits new fee params: these fees do not take immediate effect.
+    /**
+     * @notice The method commits new fee params: these fees do not take immediate effect.
      * @param new_fee: New pool fee
      * @param new_admin_fee: New admin fee (expressed as a percentage of the pool fee)
      * Both the pool fee and the admin_fee are capped by the constants MAX_FEE and MAX_ADMIN_FEE, respectively. 
@@ -884,8 +873,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice apply_new_fee
-     * @dev Apply the previously committed new pool and admin fees for the pool.
+     * @notice Apply the previously committed new pool and admin fees for the pool.
      */
     function apply_new_fee() external onlyOwner {
         require(block.timestamp >= admin_actions_deadline, "dev: insufficient time");
@@ -899,8 +887,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice revert_new_parameters
-     * @dev Resets any previously committed new fees.
+     * @notice Resets any previously committed new fees.
      */
     function revert_new_parameters() external onlyOwner {
         admin_actions_deadline = 0;
@@ -908,8 +895,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice admin_balances
-     * @dev Get the admin balance for a single coin in the pool.
+     * @notice Get the admin balance for a single coin in the pool.
      * @param i: Index of the coin to get admin balance for
      */
     function admin_balances(uint256 i) external view returns (uint256) {
@@ -921,8 +907,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice withdraw_admin_fees
-     * @dev Withdraws and transfers admin fees of the pool to the pool owner.
+     * @notice Withdraws and transfers admin fees of the pool to the pool owner.
      */
     function withdraw_admin_fees() external onlyOwner {
         for (uint256 i = 0; i < N_COINS; i++) {
@@ -939,8 +924,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice donate_admin_fees
-     * @dev Donate all admin fees to the pool’s liquidity providers.
+     * @notice Donate all admin fees to the pool’s liquidity providers.
      */
     function donate_admin_fees() external onlyOwner {
         for (uint256 i = 0; i < N_COINS; i++) {
@@ -954,15 +938,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice donate_admin_fees
-     * @dev Pause a pool by setting the is_killed boolean flag to True.
-     * This disables the following pool functionality:
-        - add_liquidity
-        - exchange
-        - remove_liquidity_imbalance
-        - remove_liquidity_one_coin
-     * It is only possible for existing LPs to remove liquidity via remove_liquidity from a paused pool
-     * Pools can only be killed within the first 30 days after deployment.
+     * @notice Pause a pool by setting the is_killed boolean flag to True.
      */
     function kill_me() external onlyOwner {
         require(kill_deadline > block.timestamp, "Exceeded deadline");
@@ -971,8 +947,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice donate_admin_fees
-     * @dev Unpause a pool that was previously paused, re-enabling exchanges.
+     * @notice Unpause a pool that was previously paused, re-enabling exchanges.
      */
     function unkill_me() external onlyOwner {
         is_killed = false;

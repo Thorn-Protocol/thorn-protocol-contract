@@ -68,7 +68,7 @@ contract StableSwapTwoPoolInfo {
     }
 
     /**
-    * @dev Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
+    * @notice Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
     * @param _balances Array of balances to calculate virtual balances from.
     * @param amp Amplification factor of the pool.
     */
@@ -235,7 +235,7 @@ contract StableSwapTwoPoolInfo {
     }
 
     /**
-    * @dev Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
+    * @notice Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
     * @param _balances The array of balances to calculate virtual balances from.
     */
     function _xp_mem(address _swap, uint256[N_COINS] memory _balances)
@@ -250,7 +250,7 @@ contract StableSwapTwoPoolInfo {
     }
 
     /**
-    * @dev Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
+    * @notice Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
     * @param xp Array of virtual balances for the pool, scaled by precision.
     * @param amp Amplification factor of the pool.
     * @return D The total value of the pool's assets (invariant D).
@@ -289,8 +289,7 @@ contract StableSwapTwoPoolInfo {
     }
 
     /**
-    * @notice get_y
-    * @dev Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
+    * @notice Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
     * @param i Index of coin to swap from.
     * @param j Index of coin to swap to
     * @param x Amount of coin i to swap
@@ -378,7 +377,7 @@ contract StableSwapTwoPoolInfo {
     }
 
     /**
-     * @dev Calculates the array of virtual balances for the pool, scaled by precision
+     * @notice Calculates the array of virtual balances for the pool, scaled by precision
      */
     function _xp(address _swap) internal view returns (uint256[N_COINS] memory result) {
         result = RATES(_swap);
@@ -388,7 +387,7 @@ contract StableSwapTwoPoolInfo {
     }
 
     /**
-    * @dev Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
+    * @notice Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
     * @param A_ The value of parameter A.
     * @param i The index of the coin for which the output amount is calculated.
     * @param xp The array of virtual balances for the pool, scaled by precision.
