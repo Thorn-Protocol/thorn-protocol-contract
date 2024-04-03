@@ -26,8 +26,8 @@ async function setUp() {
 
 
 async function main() {
-    // await deploy();
-    await setUp();
+    await deploy();
+    // await setUp();
 }
 
 main()
