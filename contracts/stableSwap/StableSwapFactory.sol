@@ -130,7 +130,14 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
     }
 
-
+    /**
+    * @notice Adds information about a stable swap pool pair to the contract's storage.
+    * @param _swapContract: Addresses of stable swap pool contracts .
+    * @param _t0: Addresses of ERC20 conracts .
+    * @param _t1: Addresses of ERC20 conracts .
+    * @param _t2: Addresses of ERC20 conracts .
+    * @param _LP: Addresses of LP token for stable swap pool contracts .
+    */
      function addPairInfoInternal(
         address _swapContract,
         address _t0,
@@ -186,6 +193,10 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         addPairInfoInternal(swapContract, t0, t1, t2, LP);
     }
 
+    /**
+    * @notice Adds information about a stable swap contract.
+    * @param _swapContract: Addresses of stable swap contracts.
+    */
     function addPairInfo(address _swapContract) external onlyOwner {
         IStableSwap swap = IStableSwap(_swapContract);
         uint256 N_COINS = swap.N_COINS();
@@ -237,7 +248,13 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     }
 
    
-     
+    /**
+    * @notice Adds stable swap three pool pair information,facilitating query three pool pair by two tokens .
+    * @param _t0: Addresses of ERC20 conracts .
+    * @param _t1: Addresses of ERC20 conracts .
+    * @param _t2: Addresses of ERC20 conracts .
+     * @param info: Addresses of three pool pair information contracts .
+    */
     function addThreePoolPairInfo(
         address _t0,
         address _t1,
@@ -270,7 +287,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     }
 
     /**
-    * @notice Retrieves information of three pool.
+    * @notice Retrieves information of three pool by two tokens.
     * @param _tokenA : Addresses of ERC20 conracts.
     * @param _tokenB : Addresses of ERC20 conracts.
     */

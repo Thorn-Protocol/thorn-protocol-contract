@@ -19,6 +19,11 @@ describe("test router", function () {
     let BUSD: Token;
     let USDC: Token;
     let USDT: Token;
+    let token0_2_pool: Token;
+    let token1_2_pool: Token;
+    let token0_3_pool: Token;
+    let token1_3_pool: Token;
+    let token2_3_pool: Token;
     const A = 1000;
     const Fee = 4000000;
     const AdminFee = 5000000000;
@@ -75,31 +80,48 @@ describe("test router", function () {
         await tx2.wait();
         let tx3 = await stableSwapThreeDeployer.transferOwnership(stableSwapFactory.address);
         await tx3.wait();
+         
 
-        //create BUSD and USDC pool and add liquidity 
+        //create BUSD and USDC pool 
         let txCreate2Pair = await stableSwapFactory.createSwapPair(BUSD.address, USDC.address, A, Fee, AdminFee);
         await txCreate2Pair.wait();
         const BUSD_USDC_address = (await stableSwapFactory.getPairInfo(BUSD.address, USDC.address))[0];
         stableSwap2Pool_BUSD_USDC = await ethers.getContractAt("StableSwapTwoPool", BUSD_USDC_address);
-        let txBUSDApp = await BUSD.approve(BUSD_USDC_address, 1000000n);
-        await txBUSDApp.wait();
-        let txUSDCApp = await USDC.approve(BUSD_USDC_address, 1000000n);
-        await txUSDCApp.wait();
-        const txAddLiquidity = await stableSwap2Pool_BUSD_USDC.add_liquidity([1000000n, 1000000n], 0, await getOption());
+        //get BUSD and USDC pool information 
+        let info_2 = await stableSwapFactory.getPairInfo(BUSD.address, USDC.address);
+        token0_2_pool= await ethers.getContractAt("Token",info_2.token0);
+        token1_2_pool=await ethers.getContractAt("Token",info_2.token1);
+        //add liquidity
+        const token0_2_pool_amount=1000000n;
+        const token1_2_pool_amount=1000000n;
+        let txToken0_2App = await token0_2_pool.approve(token0_2_pool.address,token0_2_pool_amount);
+        await txToken0_2App.wait();
+        let txToken1_2App = await token0_2_pool.approve(token1_2_pool.address,token1_2_pool_amount);
+        await txToken1_2App.wait();
+        const txAddLiquidity = await stableSwap2Pool_BUSD_USDC.add_liquidity([token0_2_pool_amount, token1_2_pool_amount], 0, await getOption());
         await txAddLiquidity.wait();
 
-        //create BUSD and USDC and USDT pool and add liquidity
+        //create BUSD and USDC and USDT pool  
         let txCreate3Pool = await stableSwapFactory.createThreePoolPair(BUSD.address, USDC.address, USDT.address, A, Fee, AdminFee);
         await txCreate3Pool.wait();
         const BUSD_USDC_USDT_address = (await stableSwapFactory.getThreePoolPairInfo(BUSD.address, USDC.address))[0];
         stableSwap3Pool_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool", BUSD_USDC_USDT_address);
-        let txBUSDApp2 = await BUSD.approve(BUSD_USDC_USDT_address, 1000000n);
-        await txBUSDApp2.wait();
-        let txUSDCApp2 = await USDC.approve(BUSD_USDC_USDT_address, 1000000n);
-        await txUSDCApp2.wait();
-        let txUSDTApp2 = await USDT.approve(BUSD_USDC_USDT_address, 1000000n);
-        await txUSDTApp2.wait();
-        const txAddLiquidity2 = await stableSwap3Pool_BUSD_USDC_USDT.add_liquidity([1000000n, 1000000n, 1000000n],0, await getOption());
+        //get BUSD and USDC, USDT  pool information
+        let info_3 = await stableSwapFactory.getThreePoolPairInfo(BUSD.address, USDC.address);
+        token0_3_pool= await ethers.getContractAt("Token",info_3.token0);
+        token1_3_pool=await ethers.getContractAt("Token",info_3.token1);
+        token2_3_pool=await ethers.getContractAt("Token",info_3.token2);
+        ////add liquidity
+        const token0_3_pool_amount=1000000n;
+        const token1_3_pool_amount=1000000n;
+        const token2_3_pool_amount=1000000n;
+        let txToken0_3App = await token0_2_pool.approve(token0_3_pool.address,token0_3_pool_amount );
+        await txToken0_3App.wait();
+        let txToken1_3App = await token0_3_pool.approve(token1_3_pool.address,token1_3_pool_amount );
+        await txToken1_3App.wait();
+        let txToken2_3App = await token0_3_pool.approve(token2_3_pool.address,token2_3_pool_amount );
+        await txToken2_3App.wait();
+        const txAddLiquidity2 = await stableSwap3Pool_BUSD_USDC_USDT.add_liquidity([token0_3_pool_amount, token1_3_pool_amount, token2_3_pool_amount],0, await getOption());
         await txAddLiquidity2.wait();
 
         // create smart contract router
@@ -140,10 +162,13 @@ describe("test router", function () {
         const BUSD_balances_before = await BUSD.balanceOf(process.env.PUBLIC_KEY);
         const USDC_balances_before = await USDC.balanceOf(process.env.PUBLIC_KEY);
 
-        let txBUSD = await BUSD.approve(stableSwapRouter.address, 1000n);
-        await txBUSD.wait();
+        const swap_amount=1000n;
 
-        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address], [2], 1000n, 0, process.env.PUBLIC_KEY, await getOption());
+        let txBUSD = await BUSD.approve(stableSwapRouter.address, swap_amount);
+        await txBUSD.wait();
+        
+        
+        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address], [2], swap_amount, 0, process.env.PUBLIC_KEY, await getOption());
         await tx.wait();
 
         const BUSD_balances_after = await BUSD.balanceOf(process.env.PUBLIC_KEY);
@@ -158,10 +183,12 @@ describe("test router", function () {
         const BUSD_balances_before = await BUSD.balanceOf(process.env.PUBLIC_KEY);
         const USDT_balances_before = await USDT.balanceOf(process.env.PUBLIC_KEY);
 
-        let txBUSD = await BUSD.approve(stableSwapRouter.address, 1000n);
+        const swap_amount=1000n;
+
+        let txBUSD = await BUSD.approve(stableSwapRouter.address, swap_amount);
         await txBUSD.wait();
 
-        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], 1000n, 0, process.env.PUBLIC_KEY, await getOption());
+        const tx = await stableSwapRouter.exactInputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], swap_amount, 0, process.env.PUBLIC_KEY, await getOption());
         await tx.wait();
 
         const BUSD_balances_after = await BUSD.balanceOf(process.env.PUBLIC_KEY);
@@ -174,13 +201,19 @@ describe("test router", function () {
 
     it("get BUSD to  be needed to get 100000 USDC when you swap BUSD ->USDC in 2 pool ", async () => {
 
-        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address], [2], 100000n, 10000000n)
+        const swap_amount=100000n;
+        const maximum_exchanged_amount=10000000n;
+
+        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address], [2], swap_amount, maximum_exchanged_amount)
         console.log("amount: ", tx);
     })
 
     it("get BUSD to  be needed to get 100000 USDT when you swap BUSD ->USDC in 2 pool  and USDC->USDT in 3 pool", async () => {
 
-        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], 100000n, 10000000n)
+        const swap_amount=100000n;
+        const maximum_exchanged_amount=10000000n;
+
+        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], swap_amount, maximum_exchanged_amount)
         console.log("amount: ", tx);
     })
 })
