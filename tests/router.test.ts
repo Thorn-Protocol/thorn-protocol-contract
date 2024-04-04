@@ -85,18 +85,17 @@ describe("test router", function () {
         //create BUSD and USDC pool 
         let txCreate2Pair = await stableSwapFactory.createSwapPair(BUSD.address, USDC.address, A, Fee, AdminFee);
         await txCreate2Pair.wait();
-        const BUSD_USDC_address = (await stableSwapFactory.getPairInfo(BUSD.address, USDC.address))[0];
-        stableSwap2Pool_BUSD_USDC = await ethers.getContractAt("StableSwapTwoPool", BUSD_USDC_address);
-        //get BUSD and USDC pool information 
         let info_2 = await stableSwapFactory.getPairInfo(BUSD.address, USDC.address);
+        //get BUSD and USDC pool information 
+        stableSwap2Pool_BUSD_USDC = await ethers.getContractAt("StableSwapTwoPool", info_2.swapContract);
         token0_2_pool= await ethers.getContractAt("Token",info_2.token0);
         token1_2_pool=await ethers.getContractAt("Token",info_2.token1);
         //add liquidity
         const token0_2_pool_amount=1000000n;
         const token1_2_pool_amount=1000000n;
-        let txToken0_2App = await token0_2_pool.approve(token0_2_pool.address,token0_2_pool_amount);
+        let txToken0_2App = await token0_2_pool.approve(stableSwap2Pool_BUSD_USDC.address,token0_2_pool_amount);
         await txToken0_2App.wait();
-        let txToken1_2App = await token0_2_pool.approve(token1_2_pool.address,token1_2_pool_amount);
+        let txToken1_2App = await token1_2_pool.approve(stableSwap2Pool_BUSD_USDC.address,token1_2_pool_amount);
         await txToken1_2App.wait();
         const txAddLiquidity = await stableSwap2Pool_BUSD_USDC.add_liquidity([token0_2_pool_amount, token1_2_pool_amount], 0, await getOption());
         await txAddLiquidity.wait();
@@ -104,10 +103,9 @@ describe("test router", function () {
         //create BUSD and USDC and USDT pool  
         let txCreate3Pool = await stableSwapFactory.createThreePoolPair(BUSD.address, USDC.address, USDT.address, A, Fee, AdminFee);
         await txCreate3Pool.wait();
-        const BUSD_USDC_USDT_address = (await stableSwapFactory.getThreePoolPairInfo(BUSD.address, USDC.address))[0];
-        stableSwap3Pool_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool", BUSD_USDC_USDT_address);
-        //get BUSD and USDC, USDT  pool information
         let info_3 = await stableSwapFactory.getThreePoolPairInfo(BUSD.address, USDC.address);
+        //get BUSD and USDC, USDT  pool information
+        stableSwap3Pool_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool", info_3.swapContract);
         token0_3_pool= await ethers.getContractAt("Token",info_3.token0);
         token1_3_pool=await ethers.getContractAt("Token",info_3.token1);
         token2_3_pool=await ethers.getContractAt("Token",info_3.token2);
@@ -115,11 +113,11 @@ describe("test router", function () {
         const token0_3_pool_amount=1000000n;
         const token1_3_pool_amount=1000000n;
         const token2_3_pool_amount=1000000n;
-        let txToken0_3App = await token0_2_pool.approve(token0_3_pool.address,token0_3_pool_amount );
+        let txToken0_3App = await token0_2_pool.approve(stableSwap3Pool_BUSD_USDC_USDT.address,token0_3_pool_amount );
         await txToken0_3App.wait();
-        let txToken1_3App = await token0_3_pool.approve(token1_3_pool.address,token1_3_pool_amount );
+        let txToken1_3App = await token1_3_pool.approve(stableSwap3Pool_BUSD_USDC_USDT.address,token1_3_pool_amount );
         await txToken1_3App.wait();
-        let txToken2_3App = await token0_3_pool.approve(token2_3_pool.address,token2_3_pool_amount );
+        let txToken2_3App = await token2_3_pool.approve(stableSwap3Pool_BUSD_USDC_USDT.address,token2_3_pool_amount );
         await txToken2_3App.wait();
         const txAddLiquidity2 = await stableSwap3Pool_BUSD_USDC_USDT.add_liquidity([token0_3_pool_amount, token1_3_pool_amount, token2_3_pool_amount],0, await getOption());
         await txAddLiquidity2.wait();
@@ -140,19 +138,6 @@ describe("test router", function () {
         ], {
             unsafeAllowLinkedLibraries: true
         })
-
-        // stableSwapFactory = await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY);
-        // BUSD = await ethers.getContractAt("Token", process.env.BUSD);
-        // USDC = await ethers.getContractAt("Token", process.env.USDC);
-        // USDT = await ethers.getContractAt("Token", process.env.USDT);
-        // let info2pool = await stableSwapFactory.getPairInfo(BUSD.address, USDC.address);
-        // stableSwap2Pool_BUSD_USDC = await ethers.getContractAt("StableSwapTwoPool",info2pool.swapContract);
-        // let info3pool = await stableSwapFactory.getThreePoolPairInfo(BUSD.address, USDC.address);
-        // stableSwap3Pool_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool",info3pool.swapContract);
-        // stableSwap3Info = await ethers.getContractAt("StableSwapThreePoolInfo",process.env.STABLE_SWAP_THREE_POOL_INFO);
-        // stableSwap2Info = await ethers.getContractAt("StableSwapTwoPoolInfo",process.env.STABLE_SWAP_TWO_POOL_INFO);
-        // stableSwapInfo = await ethers.getContractAt("StableSwapInfo",process.env.STABLE_SWAP_INFO);
-        // stableSwapRouter = await ethers.getContractAt("StableSwapRouter", process.env.STABLE_SWAP_ROUTER);
     })
 
 
