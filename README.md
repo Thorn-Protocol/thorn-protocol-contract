@@ -8,7 +8,7 @@ $ npm install --save-dev --force
 ```
 ### Config url and ENVIRONMENT_VARIABLE in .env
 - Copy and update from .env_example_bsc_testnet for bsc testnet network 
-- Copy and updare from .env_example_oasis_sapphire_mainnet for sapphire oasis network 
+- Copy and update from .env_example_oasis_sapphire_mainnet for sapphire oasis network 
 
 
 ## Table of contents 
@@ -40,11 +40,11 @@ npx hardhat compile
 **Deploy  4 contracts** in the following order: 
 ```
 npx hardhat run scripts/deploy-upgrades/1-deploy-LP-factory.ts
-npx hardhat run scripts/deploy-upgrades/2-deploy-two-pool-deployer
-npx hardhat run scripts/deploy-upgrades/3-deploy-three-pool-deployer
-npx hardhat run scripts/deploy-upgrades/4-deploy-stable-swap-factory 
+npx hardhat run scripts/deploy-upgrades/2-deploy-two-pool-deployer.ts
+npx hardhat run scripts/deploy-upgrades/3-deploy-three-pool-deployer.ts
+npx hardhat run scripts/deploy-upgrades/4-deploy-stable-swap-factory.ts 
 ```
-After completely deploying 4 contracts, navigate to the contract deploy files excluding **stable swap factory** deploy file. Comment out the **deploy** function in **main**, and uncomment **setup** function. Then, run the above commands.
+After completely deploying 4 contracts, navigate to the contract deploy files excluding **stable swap factory** deploy file. Comment out the **deploy** function in **main**, and uncomment **setup** function. Then, only run the first three commands above.
 
 Once the contracts are fully set up, procceed with the deployment: 
 
