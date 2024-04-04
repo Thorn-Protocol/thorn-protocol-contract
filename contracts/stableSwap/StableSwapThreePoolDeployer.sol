@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 
-import "./StableSwapThreePool.sol";
+import "./plain-pools/StableSwapThreePool.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
