@@ -1,22 +1,46 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./StableSwapTwoPool.sol";
+import "./plain-pools/StableSwapTwoPool.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-contract StableSwapTwoPoolDeployer is Ownable {
+/**
+ * @title stable swap three pool deployer
+ * @notice A deployer contract for executing the three pool deloyment 
+ * @dev This contract manages the deployment of pool, including sorting the pool tokens
+ */
+
+contract StableSwapTwoPoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     uint256 public constant N_COINS = 2;
 
-    /**
-     * @notice constructor
-     */
-    constructor() {}
+   /*╔══════════════════════════════╗
+     ║          CONSTRUCTOR         ║
+     ╚══════════════════════════════╝*/
 
-    // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
-        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    function initialize() public initializer {
+
+        __Ownable_init_unchained();
+      __Pausable_init_unchained();
+
     }
+
+   /*╔══════════════════════════════╗
+     ║          ADMIN FUNCTIONS     ║
+     ╚══════════════════════════════╝*/
+
+
+     /**
+    * @notice  onlyOwner
+    * @dev     pauseContract
+    */
+    function pauseContract() external onlyOwner(){ _pause();}
+
+    /**
+    * @notice  onlyOwner
+    * @dev     unpauseContract
+    */
+    function unPauseContract() external onlyOwner(){ _unpause();}
 
     /**
      * @notice createSwapPair
@@ -51,4 +75,15 @@ contract StableSwapTwoPoolDeployer is Ownable {
 
         return swapContract;
     }
+
+    /**
+    * @notice Sorts two token addresses in a consistent order.
+    * @param tokenA: Addresses of ERC20 conracts .
+    * @param tokenB: Addresses of ERC20 conracts .
+    */
+     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    }
+
 }

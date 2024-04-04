@@ -1,13 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+
 import "../interfaces/IStableSwap.sol";
 import "../interfaces/IStableSwapLP.sol";
 import "../interfaces/IStableSwapDeployer.sol";
 import "../interfaces/IStableSwapLPFactory.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-contract StableSwapFactory is Ownable {
+/**
+ * @title Stable swap factory 
+ * @notice A factory contract for creating new pool and providing pool information 
+ * @dev  This contract manages the creations of stable swap pools and provides access to their information
+ */
+
+contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
+
     struct StableSwapPairInfo {
         address swapContract;
         address token0;
@@ -27,15 +36,26 @@ contract StableSwapFactory is Ownable {
     mapping(address => mapping(address => StableSwapThreePoolPairInfo)) threePoolInfo;
     mapping(uint256 => address) public swapPairContract;
 
-    IStableSwapLPFactory public immutable LPFactory;
-    IStableSwapDeployer public immutable SwapTwoPoolDeployer;
-    IStableSwapDeployer public immutable SwapThreePoolDeployer;
+    IStableSwapLPFactory public LPFactory;
+    IStableSwapDeployer public  SwapTwoPoolDeployer;
+    IStableSwapDeployer public  SwapThreePoolDeployer;
 
     address constant ZEROADDRESS = address(0);
 
     uint256 public pairLength;
 
+
+    
+
+    /*╔══════════════════════════════╗
+      ║          EVENT               ║
+      ╚══════════════════════════════╝*/
+
     event NewStableSwapPair(address indexed swapContract, address tokenA, address tokenB, address tokenC, address LP);
+
+    /*╔══════════════════════════════╗
+      ║          CONSTRUCTOR         ║
+      ╚══════════════════════════════╝*/
 
     /**
      * @notice constructor
@@ -43,55 +63,39 @@ contract StableSwapFactory is Ownable {
      * _SwapTwoPoolDeployer: Swap two pool deployer
      * _SwapThreePoolDeployer: Swap three pool deployer
      */
-    constructor(
+
+     function initialize(
         IStableSwapLPFactory _LPFactory,
         IStableSwapDeployer _SwapTwoPoolDeployer,
         IStableSwapDeployer _SwapThreePoolDeployer
-    ) {
+
+     ) public initializer {
         LPFactory = _LPFactory;
         SwapTwoPoolDeployer = _SwapTwoPoolDeployer;
         SwapThreePoolDeployer = _SwapThreePoolDeployer;
-    }
+        __Ownable_init_unchained();
+      __Pausable_init_unchained();
 
-    // returns sorted token addresses, used to handle return values from pairs sorted in this order
-    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
-        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
-        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-    }
 
-    function sortTokens(
-        address tokenA,
-        address tokenB,
-        address tokenC
-    )
-        internal
-        pure
-        returns (
-            address,
-            address,
-            address
-        )
-    {
-        require(tokenA != tokenB && tokenA != tokenC && tokenB != tokenC, "IDENTICAL_ADDRESSES");
-        address tmp;
-        if (tokenA > tokenB) {
-            tmp = tokenA;
-            tokenA = tokenB;
-            tokenB = tmp;
-        }
-        if (tokenB > tokenC) {
-            tmp = tokenB;
-            tokenB = tokenC;
-            tokenC = tmp;
-            if (tokenA > tokenB) {
-                tmp = tokenA;
-                tokenA = tokenB;
-                tokenB = tmp;
-            }
-        }
-        return (tokenA, tokenB, tokenC);
-    }
+     }
 
+    /*╔══════════════════════════════╗
+      ║          ADMIN FUNCTIONS     ║
+      ╚══════════════════════════════╝*/
+
+    /**
+    * @notice  onlyOwner
+    * @dev     pauseContract
+    */
+    function pauseContract() external onlyOwner(){ _pause();}
+
+    /**
+    * @notice  onlyOwner
+    * @dev     unpauseContract
+    */
+    function unPauseContract() external onlyOwner(){ _unpause();}
+
+    
     /**
      * @notice createSwapPair
      * @param _tokenA: Addresses of ERC20 conracts .
@@ -100,6 +104,7 @@ contract StableSwapFactory is Ownable {
      * @param _fee: Fee to charge for exchanges
      * @param _admin_fee: Admin fee
      */
+    
     function createSwapPair(
         address _tokenA,
         address _tokenB,
@@ -113,6 +118,46 @@ contract StableSwapFactory is Ownable {
         address swapContract = SwapTwoPoolDeployer.createSwapPair(t0, t1, _A, _fee, _admin_fee, msg.sender, LP);
         IStableSwapLP(LP).setMinter(swapContract);
         addPairInfoInternal(swapContract, t0, t1, ZEROADDRESS, LP);
+    }
+
+    /**
+    * @notice Sorts three token addresses in a consistent order.
+    * @param tokenA: Addresses of ERC20 conracts .
+    * @param tokenB: Addresses of ERC20 conracts .
+    */
+    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+        require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+    }
+
+    /**
+    * @notice Adds information about a stable swap pool pair to the contract's storage.
+    * @param _swapContract: Addresses of stable swap pool contracts .
+    * @param _t0: Addresses of ERC20 conracts .
+    * @param _t1: Addresses of ERC20 conracts .
+    * @param _t2: Addresses of ERC20 conracts .
+    * @param _LP: Addresses of LP token for stable swap pool contracts .
+    */
+     function addPairInfoInternal(
+        address _swapContract,
+        address _t0,
+        address _t1,
+        address _t2,
+        address _LP
+    ) internal {
+        StableSwapThreePoolPairInfo storage info = stableSwapPairInfo[_t0][_t1][_t2];
+        info.swapContract = _swapContract;
+        info.token0 = _t0;
+        info.token1 = _t1;
+        info.token2 = _t2;
+        info.LPContract = _LP;
+        swapPairContract[pairLength] = _swapContract;
+        pairLength += 1;
+        if (_t2 != ZEROADDRESS) {
+            addThreePoolPairInfo(_t0, _t1, _t2, info);
+        }
+
+        emit NewStableSwapPair(_swapContract, _t0, _t1, _t2, _LP);
     }
 
     /**
@@ -148,28 +193,68 @@ contract StableSwapFactory is Ownable {
         addPairInfoInternal(swapContract, t0, t1, t2, LP);
     }
 
-    function addPairInfoInternal(
-        address _swapContract,
-        address _t0,
-        address _t1,
-        address _t2,
-        address _LP
-    ) internal {
-        StableSwapThreePoolPairInfo storage info = stableSwapPairInfo[_t0][_t1][_t2];
-        info.swapContract = _swapContract;
-        info.token0 = _t0;
-        info.token1 = _t1;
-        info.token2 = _t2;
-        info.LPContract = _LP;
-        swapPairContract[pairLength] = _swapContract;
-        pairLength += 1;
-        if (_t2 != ZEROADDRESS) {
-            addThreePoolPairInfo(_t0, _t1, _t2, info);
+    /**
+    * @notice Adds information about a stable swap contract.
+    * @param _swapContract: Addresses of stable swap contracts.
+    */
+    function addPairInfo(address _swapContract) external onlyOwner {
+        IStableSwap swap = IStableSwap(_swapContract);
+        uint256 N_COINS = swap.N_COINS();
+        if (N_COINS == 2) {
+            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), ZEROADDRESS, swap.token());
+        } else if (N_COINS == 3) {
+            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), swap.coins(2), swap.token());
         }
-
-        emit NewStableSwapPair(_swapContract, _t0, _t1, _t2, _LP);
     }
 
+
+     /**
+    * @notice Sorts three token addresses in a consistent order.
+    * @param tokenA: Addresses of ERC20 conracts .
+    * @param tokenB: Addresses of ERC20 conracts .
+    * @param tokenC: Addresses of ERC20 conracts .
+    */
+    function sortTokens(
+        address tokenA,
+        address tokenB,
+        address tokenC
+    )
+        internal
+        pure
+        returns (
+            address,
+            address,
+            address
+        )
+    {
+        require(tokenA != tokenB && tokenA != tokenC && tokenB != tokenC, "IDENTICAL_ADDRESSES");
+        address tmp;
+        if (tokenA > tokenB) {
+            tmp = tokenA;
+            tokenA = tokenB;
+            tokenB = tmp;
+        }
+        if (tokenB > tokenC) {
+            tmp = tokenB;
+            tokenB = tokenC;
+            tokenC = tmp;
+            if (tokenA > tokenB) {
+                tmp = tokenA;
+                tokenA = tokenB;
+                tokenB = tmp;
+            }
+        }
+        return (tokenA, tokenB, tokenC);
+    }
+
+   
+    /**
+    * @notice Adds stable swap three pool pair information,facilitating query three pool pair by two tokens .
+    * @param _t0: Addresses of ERC20 conracts .
+    * @param _t1: Addresses of ERC20 conracts .
+    * @param _t2: Addresses of ERC20 conracts .
+     * @param info: Addresses of three pool pair information contracts .
+    */
     function addThreePoolPairInfo(
         address _t0,
         address _t1,
@@ -181,16 +266,17 @@ contract StableSwapFactory is Ownable {
         threePoolInfo[_t1][_t2] = info;
     }
 
-    function addPairInfo(address _swapContract) external onlyOwner {
-        IStableSwap swap = IStableSwap(_swapContract);
-        uint256 N_COINS = swap.N_COINS();
-        if (N_COINS == 2) {
-            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), ZEROADDRESS, swap.token());
-        } else if (N_COINS == 3) {
-            addPairInfoInternal(_swapContract, swap.coins(0), swap.coins(1), swap.coins(2), swap.token());
-        }
-    }
+    
+    /*╔══════════════════════════════╗
+      ║         VIEW FUNCTIONS       ║
+      ╚══════════════════════════════╝*/
 
+    
+    /**
+    * @notice Retrieves information of two pool.
+    * @param _tokenA : Addresses of ERC20 conracts.
+    * @param _tokenB : Addresses of ERC20 conracts.
+    */
     function getPairInfo(address _tokenA, address _tokenB) external view returns (StableSwapPairInfo memory info) {
         (address t0, address t1) = sortTokens(_tokenA, _tokenB);
         StableSwapThreePoolPairInfo memory pairInfo = stableSwapPairInfo[t0][t1][ZEROADDRESS];
@@ -200,6 +286,11 @@ contract StableSwapFactory is Ownable {
         info.LPContract = pairInfo.LPContract;
     }
 
+    /**
+    * @notice Retrieves information of three pool by two tokens.
+    * @param _tokenA : Addresses of ERC20 conracts.
+    * @param _tokenB : Addresses of ERC20 conracts.
+    */
     function getThreePoolPairInfo(address _tokenA, address _tokenB)
         external
         view
