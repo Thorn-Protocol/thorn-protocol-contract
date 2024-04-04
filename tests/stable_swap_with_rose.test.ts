@@ -77,17 +77,6 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
 
         const poolInfoSC_CF = await ethers.getContractFactory("StableSwapInfo");
         poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address);
-
-        // factory = await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY);
-        // WROSE = await ethers.getContractAt("Token", process.env.WROSE);
-        // let tx = await factory.createSwapPair(WROSE.address, ROSEAddress, A, Fee, AdminFee);
-        // await tx.wait();
-        // let info = await factory.getPairInfo(WROSE.address, ROSEAddress);        
-        // swap_ROSE_WROSE = await ethers.getContractAt("StableSwapTwoPool",info.swapContract);
-        // LP_ROSE_WROSE = await ethers.getContractAt("StableSwapLP", info.LPContract);
-        // threePoolInfoSC = await ethers.getContractAt("StableSwapThreePoolInfo",process.env.STABLE_SWAP_THREE_POOL_INFO);
-        // twoPoolInfoSC = await ethers.getContractAt("StableSwapTwoPoolInfo",process.env.STABLE_SWAP_TWO_POOL_INFO);
-        // poolInfoSC = await ethers.getContractAt("StableSwapInfo",process.env.STABLE_SWAP_INFO);
     });
 
     it("Check pair info between factory and swap smart contract", async () => {

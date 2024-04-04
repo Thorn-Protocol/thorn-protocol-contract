@@ -89,19 +89,6 @@ describe("StableSwapThreePool Contract Tests", function () {
         const poolInfoSC_CF = await ethers.getContractFactory("StableSwapInfo");
         poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address);
 
-        // factory = await ethers.getContractAt("StableSwapFactory", process.env.STABLE_SWAP_FACTORY);
-        // BUSD = await ethers.getContractAt("Token", process.env.BUSD);
-        // USDC = await ethers.getContractAt("Token", process.env.USDC);
-        // USDT = await ethers.getContractAt("Token", process.env.USDT);
-        // let info = await factory.getThreePoolPairInfo(BUSD.address, USDC.address);
-        // swap_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool",info.swapContract);
-        // LP_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapLP", info.LPContract);
-        // token0 = await ethers.getContractAt("Token", info.token0);
-        // token1 = await ethers.getContractAt("Token", info.token1);
-        // token2 = await ethers.getContractAt("Token", info.token2);
-        // threePoolInfoSC = await ethers.getContractAt("StableSwapThreePoolInfo",process.env.STABLE_SWAP_THREE_POOL_INFO);
-        // twoPoolInfoSC = await ethers.getContractAt("StableSwapTwoPoolInfo",process.env.STABLE_SWAP_TWO_POOL_INFO);
-        // poolInfoSC = await ethers.getContractAt("StableSwapInfo",process.env.STABLE_SWAP_INFO);
     });
 
     it("Check pair info between factory and swap smart contract", async () => {
