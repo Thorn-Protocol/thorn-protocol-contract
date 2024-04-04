@@ -33,11 +33,11 @@ There are 5 main contract types:
 
 ## Deployment
 
-**Compile contract**  before deploying
+**Compile contract**  before deploying:
 ```
 npx hardhat compile
 ```
-**Deploy  4 contracts** in the following order 
+**Deploy  4 contracts** in the following order: 
 ```
 npx hardhat run scripts/deploy-upgrades/1-deploy-LP-factory.ts
 npx hardhat run scripts/deploy-upgrades/2-deploy-two-pool-deployer
@@ -71,7 +71,7 @@ The [test suite](tests) common tests for pools, as well as router tests.
 To run tests : 
 
 ```
-npx hardhat test tests/<name test file>
+npx hardhat test tests/<test file name>
 ```
 
 
