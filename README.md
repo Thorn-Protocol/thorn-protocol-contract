@@ -60,8 +60,8 @@ npx hardhat run scripts/deploy-upgrades/9-deploy-stable-swap-router.ts
 
 ### Organization and Workflow
 
-* New pools are creating through Create function in SwapFactory contract 
-* Once created, the pools information is taken from  GetInfo function in SwapFactory 
+* New pools are creating through 'create' functions in SwapFactory contrac,by only the contract owner
+* Once created, the pools information is  retrieved using 'get info' functions in SwapFactory 
 
 
 ### Running the Tests
