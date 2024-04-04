@@ -35,7 +35,7 @@ There are 5 main contract types:
 
 **Compile contract**  before deploying
 ```
-npx hardhat complie
+npx hardhat compile
 ```
 **Deploy  4 contracts** in the following order 
 ```
