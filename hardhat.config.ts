@@ -16,8 +16,6 @@ dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
-const PRIVATE_KEY_OASIS = process.env.PRIVATE_KEY_OASIS;
-
 module.exports = {
   solidity: {
     compilers: [
@@ -105,7 +103,7 @@ module.exports = {
       // gas: 25e6,
     },
     bscTestnet: {
-      url: "https://nd-741-200-374.p2pify.com/e47c8aefbd713f6684e9ee1a095c1052",
+      url: process.env.PROVIDER_URL,
       chainId: 97,
       gasPrice: 1e10,
       // gas: 2e7,
@@ -136,10 +134,10 @@ module.exports = {
     sapphireMainnet: {
       url: "https://sapphire.oasis.io/",
       chainId: 23294,
-      // gasPrice: 4e9,
+      // gasPrice: 4e7,
       // gas: 2e7,
       accounts: [
-        `0x${PRIVATE_KEY_OASIS}`
+        `0x${PRIVATE_KEY}`
       ]
     }
   },

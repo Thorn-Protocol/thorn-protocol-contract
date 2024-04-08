@@ -5,18 +5,29 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../interfaces/IStableSwapLP.sol";
+import "../../interfaces/IStableSwapLP.sol";
 
-contract StableSwapThreePool is Ownable, ReentrancyGuard {
+/**
+ * @title StableSwapTwoPool
+ * @notice This contract facilitates liquidity addition, stable swapping, and liquidity removal in a stable swap system with two pools.
+ * @dev It includes functions for adding liquidity, stable swapping, and removing liquidity, as well as parameter calculation for main operations.
+ */
+
+contract StableSwapTwoPool is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    uint256 public constant N_COINS = 3;
+    /*╔══════════════════════════════╗
+      ║          CONSTANT            ║
+      ╚══════════════════════════════╝*/
 
-    uint256 public constant MAX_DECIMAL = 18;
-    uint256 public constant FEE_DENOMINATOR = 1e10;
-    uint256 public constant PRECISION = 1e18;
-    uint256[N_COINS] public PRECISION_MUL;
-    uint256[N_COINS] public RATES;
+    uint256 public constant N_COINS = 2; //The number of coins within the pool
+
+    uint256 public constant MAX_DECIMAL = 18; //Maximum number of decimal places for the token balances
+    uint256 public constant FEE_DENOMINATOR = 1e10; //The denominator used to calculate the fee, fees are expressed as a fraction of 1e10
+    uint256 public constant PRECISION = 1e18; // The precision to which values are calculated, accurate up to 18 decimal places
+    uint256[N_COINS] public PRECISION_MUL; //Array of integers that coin balances are multiplied by in order to adjust their precision to 18 decimal places
+    uint256[N_COINS] public RATES; //Array of integers indicating the relative value of `1e18` tokens for each stablecoin
+
 
     uint256 public constant MAX_ADMIN_FEE = 1e10;
     uint256 public constant MAX_FEE = 5e9;
@@ -56,6 +67,10 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     address public immutable STABLESWAP_FACTORY;
     bool public isInitialized;
 
+    /*╔══════════════════════════════╗
+      ║          EVENT               ║
+      ╚══════════════════════════════╝*/
+
     event TokenExchange(
         address indexed buyer,
         uint256 sold_id,
@@ -93,6 +108,10 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
     event DonateAdminFees();
     event Kill();
     event Unkill();
+
+   /*╔══════════════════════════════╗
+     ║          CONSTRUCTOR         ║
+     ╚══════════════════════════════╝*/
 
     /**
      * @notice constructor
@@ -149,6 +168,13 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         transferOwnership(_owner);
     }
 
+    /*╔══════════════════════════════╗
+      ║         VIEW FUNCTIONS       ║
+      ╚══════════════════════════════╝*/
+    /**
+    * @notice Retrieves the current value of parameter A.
+    * Handles ramping A up or down over time if specified.
+    */
     function get_A() internal view returns (uint256) {
         //Handle ramping A up or down
         uint256 t1 = future_A_time;
@@ -168,10 +194,18 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         }
     }
 
+    
+     /**
+     * @notice Getter for the amplification coefficient of the pool.
+     * The amplification coefficient A determines a pool’s tolerance for imbalance between the assets within it.
+     */
     function A() external view returns (uint256) {
         return get_A();
     }
 
+    /**
+     * @notice Calculates the array of virtual balances for the pool, scaled by precision
+     */
     function _xp() internal view returns (uint256[N_COINS] memory result) {
         result = RATES;
         for (uint256 i = 0; i < N_COINS; i++) {
@@ -179,6 +213,10 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+    * @notice Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
+    * @param _balances The array of balances to calculate virtual balances from.
+    */
     function _xp_mem(uint256[N_COINS] memory _balances) internal view returns (uint256[N_COINS] memory result) {
         result = RATES;
         for (uint256 i = 0; i < N_COINS; i++) {
@@ -186,6 +224,12 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+    * @notice Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
+    * @param xp Array of virtual balances for the pool, scaled by precision.
+    * @param amp Amplification factor of the pool.
+    * @return D The total value of the pool's assets (invariant D).
+    */
     function get_D(uint256[N_COINS] memory xp, uint256 amp) internal pure returns (uint256) {
         uint256 S;
         for (uint256 i = 0; i < N_COINS; i++) {
@@ -219,10 +263,20 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         return D;
     }
 
+    /**
+    * @notice Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
+    * @param _balances Array of balances to calculate virtual balances from.
+    * @param amp Amplification factor of the pool.
+    */
     function get_D_mem(uint256[N_COINS] memory _balances, uint256 amp) internal view returns (uint256) {
         return get_D(_xp_mem(_balances), amp);
     }
 
+    /**
+    * @notice Current virtual price of the pool LP token relative to the underlying pool assets.
+    * Can get the absolute price by multiplying it with the price of the underlying assets.
+    * The method returns virtual_price as an integer with 1e18 precision.
+    */
     function get_virtual_price() external view returns (uint256) {
         /**
         Returns portfolio virtual price (for calculating profit)
@@ -237,6 +291,13 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         return (D * PRECISION) / token_supply;
     }
 
+    /**
+     * @notice Calculate addition or reduction in token supply from a deposit or withdrawal
+     * Returns the expected amount of LP tokens received. 
+     * This calculation accounts for slippage, but not fees.
+     * @param amounts: Amount of each coin being deposited
+     * @param deposit: Set True for deposits, False for withdrawals
+     */
     function calc_token_amount(uint256[N_COINS] memory amounts, bool deposit) external view returns (uint256) {
         /**
         Simplified method to calculate addition or reduction in token supply at
@@ -265,6 +326,217 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         return (difference * token_amount) / D0;
     }
 
+    /**
+    * @notice Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
+    * @param i Index of coin to swap from.
+    * @param j Index of coin to swap to
+    * @param x Amount of coin i to swap
+    * @param xp_ The array of virtual balances for the pool, scaled by precision.
+    */
+    function get_y(
+        uint256 i,
+        uint256 j,
+        uint256 x,
+        uint256[N_COINS] memory xp_
+    ) internal view returns (uint256) {
+        // x in the input is converted to the same price/precision
+        require((i != j) && (i < N_COINS) && (j < N_COINS), "Illegal parameter");
+        uint256 amp = get_A();
+        uint256 D = get_D(xp_, amp);
+        uint256 c = D;
+        uint256 S_;
+        uint256 Ann = amp * N_COINS;
+
+        uint256 _x;
+        for (uint256 k = 0; k < N_COINS; k++) {
+            if (k == i) {
+                _x = x;
+            } else if (k != j) {
+                _x = xp_[k];
+            } else {
+                continue;
+            }
+            S_ += _x;
+            c = (c * D) / (_x * N_COINS);
+        }
+        c = (c * D) / (Ann * N_COINS);
+        uint256 b = S_ + D / Ann; // - D
+        uint256 y_prev;
+        uint256 y = D;
+
+        for (uint256 m = 0; m < 255; m++) {
+            y_prev = y;
+            y = (y * y + c) / (2 * y + b - D);
+            // Equality with the precision of 1
+            if (y > y_prev) {
+                if (y - y_prev <= 1) {
+                    break;
+                }
+            } else {
+                if (y_prev - y <= 1) {
+                    break;
+                }
+            }
+        }
+        return y;
+    }
+
+    /**
+     * @notice Get the amount of coin j one would receive for swapping dx of coin i.
+     * @param i: Index of coin to swap from
+     * @param j: Index of coin to swap to
+     * @param dx: Amount of coin i to swap
+     */
+    function get_dy(
+        uint256 i,
+        uint256 j,
+        uint256 dx
+    ) external view returns (uint256) {
+        // dx and dy in c-units
+        uint256[N_COINS] memory rates = RATES;
+        uint256[N_COINS] memory xp = _xp();
+
+        uint256 x = xp[i] + ((dx * rates[i]) / PRECISION);
+        uint256 y = get_y(i, j, x, xp);
+        uint256 dy = ((xp[j] - y - 1) * PRECISION) / rates[j];
+        uint256 _fee = (fee * dy) / FEE_DENOMINATOR;
+        return dy - _fee;
+    }
+
+    /**
+    * @notice Get the amount of coin j one would receive for swapping dx of coin i, in underlying units.
+    * @param i Index of coin to swap from
+    * @param j Index of coin to swap to
+    * @param dx Amount of coin i to swap
+    */
+    function get_dy_underlying(
+        uint256 i,
+        uint256 j,
+        uint256 dx
+    ) external view returns (uint256) {
+        // dx and dy in underlying units
+        uint256[N_COINS] memory xp = _xp();
+        uint256[N_COINS] memory precisions = PRECISION_MUL;
+
+        uint256 x = xp[i] + dx * precisions[i];
+        uint256 y = get_y(i, j, x, xp);
+        uint256 dy = (xp[j] - y - 1) / precisions[j];
+        uint256 _fee = (fee * dy) / FEE_DENOMINATOR;
+        return dy - _fee;
+    }
+
+    /**
+    * @notice Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
+    * @param A_ The value of parameter A.
+    * @param i The index of the coin for which the output amount is calculated.
+    * @param xp The array of virtual balances for the pool, scaled by precision.
+    * @param D The new value of invariant D.
+    */
+    function get_y_D(
+        uint256 A_,
+        uint256 i,
+        uint256[N_COINS] memory xp,
+        uint256 D
+    ) internal pure returns (uint256) {
+        /**
+        Calculate x[i] if one reduces D from being calculated for xp to D
+
+        Done by solving quadratic equation iteratively.
+        x_1**2 + x1 * (sum' - (A*n**n - 1) * D / (A * n**n)) = D ** (n + 1) / (n ** (2 * n) * prod' * A)
+        x_1**2 + b*x_1 = c
+
+        x_1 = (x_1**2 + c) / (2*x_1 + b)
+        */
+        // x in the input is converted to the same price/precision
+        require(i < N_COINS, "dev: i above N_COINS");
+        uint256 c = D;
+        uint256 S_;
+        uint256 Ann = A_ * N_COINS;
+
+        uint256 _x;
+        for (uint256 k = 0; k < N_COINS; k++) {
+            if (k != i) {
+                _x = xp[k];
+            } else {
+                continue;
+            }
+            S_ += _x;
+            c = (c * D) / (_x * N_COINS);
+        }
+        c = (c * D) / (Ann * N_COINS);
+        uint256 b = S_ + D / Ann;
+        uint256 y_prev;
+        uint256 y = D;
+
+        for (uint256 k = 0; k < 255; k++) {
+            y_prev = y;
+            y = (y * y + c) / (2 * y + b - D);
+            // Equality with the precision of 1
+            if (y > y_prev) {
+                if (y - y_prev <= 1) {
+                    break;
+                }
+            } else {
+                if (y_prev - y <= 1) {
+                    break;
+                }
+            }
+        }
+        return y;
+    }
+    
+    function _calc_withdraw_one_coin(uint256 _token_amount, uint256 i) internal view returns (uint256, uint256) {
+        // First, need to calculate
+        // * Get current D
+        // * Solve Eqn against y_i for D - _token_amount
+        uint256 amp = get_A();
+        uint256 _fee = (fee * N_COINS) / (4 * (N_COINS - 1));
+        uint256[N_COINS] memory precisions = PRECISION_MUL;
+        uint256 total_supply = token.totalSupply();
+
+        uint256[N_COINS] memory xp = _xp();
+
+        uint256 D0 = get_D(xp, amp);
+        uint256 D1 = D0 - (_token_amount * D0) / total_supply;
+        uint256[N_COINS] memory xp_reduced = xp;
+
+        uint256 new_y = get_y_D(amp, i, xp, D1);
+        uint256 dy_0 = (xp[i] - new_y) / precisions[i]; // w/o fees
+
+        for (uint256 k = 0; k < N_COINS; k++) {
+            uint256 dx_expected;
+            if (k == i) {
+                dx_expected = (xp[k] * D1) / D0 - new_y;
+            } else {
+                dx_expected = xp[k] - (xp[k] * D1) / D0;
+            }
+            xp_reduced[k] -= (_fee * dx_expected) / FEE_DENOMINATOR;
+        }
+        uint256 dy = xp_reduced[i] - get_y_D(amp, i, xp_reduced, D1);
+        dy = (dy - 1) / precisions[i]; // Withdraw less to account for rounding errors
+
+        return (dy, dy_0 - dy);
+    }
+
+    /**
+     * @notice Calculate the amount received when withdrawing a single coin.
+     * @param _token_amount: Amount of LP tokens to burn in the withdrawal
+     * @param i: Index value of the coin to withdraw
+     */
+    function calc_withdraw_one_coin(uint256 _token_amount, uint256 i) external view returns (uint256) {
+        (uint256 dy, ) = _calc_withdraw_one_coin(_token_amount, i);
+        return dy;
+    }
+
+    /*╔══════════════════════════════╗
+      ║          USER FUNCTIONS      ║
+      ╚══════════════════════════════╝*/
+
+    /**
+     * @notice Deposit coins into the pool
+     * @param amounts: Amount of each coin being deposited
+     * @param min_mint_amount: Minimum amount of LP tokens to mint from the deposit
+     */
     function add_liquidity(uint256[N_COINS] memory amounts, uint256 min_mint_amount) external payable nonReentrant {
         //Amounts is amounts of c-tokens
         require(!is_killed, "Killed");
@@ -283,7 +555,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         if (token_supply > 0) {
             D0 = get_D_mem(old_balances, amp);
         }
-        uint256[N_COINS] memory new_balances = [old_balances[0], old_balances[1], old_balances[2]];
+        uint256[N_COINS] memory new_balances = [old_balances[0], old_balances[1]];
 
         for (uint256 i = 0; i < N_COINS; i++) {
             if (token_supply == 0) {
@@ -342,86 +614,13 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit AddLiquidity(msg.sender, amounts, fees, D1, token_supply + mint_amount);
     }
 
-    function get_y(
-        uint256 i,
-        uint256 j,
-        uint256 x,
-        uint256[N_COINS] memory xp_
-    ) internal view returns (uint256) {
-        // x in the input is converted to the same price/precision
-        require((i != j) && (i < N_COINS) && (j < N_COINS), "Illegal parameter");
-        uint256 amp = get_A();
-        uint256 D = get_D(xp_, amp);
-        uint256 c = D;
-        uint256 S_;
-        uint256 Ann = amp * N_COINS;
-
-        uint256 _x;
-        for (uint256 k = 0; k < N_COINS; k++) {
-            if (k == i) {
-                _x = x;
-            } else if (k != j) {
-                _x = xp_[k];
-            } else {
-                continue;
-            }
-            S_ += _x;
-            c = (c * D) / (_x * N_COINS);
-        }
-        c = (c * D) / (Ann * N_COINS);
-        uint256 b = S_ + D / Ann; // - D
-        uint256 y_prev;
-        uint256 y = D;
-
-        for (uint256 m = 0; m < 255; m++) {
-            y_prev = y;
-            y = (y * y + c) / (2 * y + b - D);
-            // Equality with the precision of 1
-            if (y > y_prev) {
-                if (y - y_prev <= 1) {
-                    break;
-                }
-            } else {
-                if (y_prev - y <= 1) {
-                    break;
-                }
-            }
-        }
-        return y;
-    }
-
-    function get_dy(
-        uint256 i,
-        uint256 j,
-        uint256 dx
-    ) external view returns (uint256) {
-        // dx and dy in c-units
-        uint256[N_COINS] memory rates = RATES;
-        uint256[N_COINS] memory xp = _xp();
-
-        uint256 x = xp[i] + ((dx * rates[i]) / PRECISION);
-        uint256 y = get_y(i, j, x, xp);
-        uint256 dy = ((xp[j] - y - 1) * PRECISION) / rates[j];
-        uint256 _fee = (fee * dy) / FEE_DENOMINATOR;
-        return dy - _fee;
-    }
-
-    function get_dy_underlying(
-        uint256 i,
-        uint256 j,
-        uint256 dx
-    ) external view returns (uint256) {
-        // dx and dy in underlying units
-        uint256[N_COINS] memory xp = _xp();
-        uint256[N_COINS] memory precisions = PRECISION_MUL;
-
-        uint256 x = xp[i] + dx * precisions[i];
-        uint256 y = get_y(i, j, x, xp);
-        uint256 dy = (xp[j] - y - 1) / precisions[j];
-        uint256 _fee = (fee * dy) / FEE_DENOMINATOR;
-        return dy - _fee;
-    }
-
+    /**
+     * @notice Perform an exchange between two coins.
+     * @param i: Index of coin to swap from
+     * @param j: Index of coin to swap to
+     * @param dx: Amount of coin i to swap
+     * @param min_dy: 	Minimum amount of j to receive
+     */
     function exchange(
         uint256 i,
         uint256 j,
@@ -465,6 +664,11 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit TokenExchange(msg.sender, i, dx, j, dy);
     }
 
+     /**
+     * @notice Withdraw coins from the pool
+     * @param _amount: Quantity of LP tokens to burn in the withdrawal
+     * @param min_amounts: Minimum amounts of underlying coins to receive
+     */
     function remove_liquidity(uint256 _amount, uint256[N_COINS] memory min_amounts) external nonReentrant {
         uint256 total_supply = token.totalSupply();
         uint256[N_COINS] memory amounts;
@@ -483,6 +687,11 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit RemoveLiquidity(msg.sender, amounts, fees, total_supply - _amount);
     }
 
+     /**
+     * @notice Withdraw coins from the pool in an imbalanced amount
+     * @param amounts: List of amounts of underlying coins to withdraw
+     * @param max_burn_amount: Maximum amount of LP token to burn in the withdrawal
+     */
     function remove_liquidity_imbalance(uint256[N_COINS] memory amounts, uint256 max_burn_amount)
         external
         nonReentrant
@@ -496,7 +705,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         uint256 amp = get_A();
 
         uint256[N_COINS] memory old_balances = balances;
-        uint256[N_COINS] memory new_balances = [old_balances[0], old_balances[1], old_balances[2]];
+        uint256[N_COINS] memory new_balances = [old_balances[0], old_balances[1]];
         uint256 D0 = get_D_mem(old_balances, amp);
         for (uint256 i = 0; i < N_COINS; i++) {
             new_balances[i] -= amounts[i];
@@ -533,97 +742,12 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit RemoveLiquidityImbalance(msg.sender, amounts, fees, D1, token_supply);
     }
 
-    function get_y_D(
-        uint256 A_,
-        uint256 i,
-        uint256[N_COINS] memory xp,
-        uint256 D
-    ) internal pure returns (uint256) {
-        /**
-        Calculate x[i] if one reduces D from being calculated for xp to D
-
-        Done by solving quadratic equation iteratively.
-        x_1**2 + x1 * (sum' - (A*n**n - 1) * D / (A * n**n)) = D ** (n + 1) / (n ** (2 * n) * prod' * A)
-        x_1**2 + b*x_1 = c
-
-        x_1 = (x_1**2 + c) / (2*x_1 + b)
-        */
-        // x in the input is converted to the same price/precision
-        require(i < N_COINS, "dev: i above N_COINS");
-        uint256 c = D;
-        uint256 S_;
-        uint256 Ann = A_ * N_COINS;
-
-        uint256 _x;
-        for (uint256 k = 0; k < N_COINS; k++) {
-            if (k != i) {
-                _x = xp[k];
-            } else {
-                continue;
-            }
-            S_ += _x;
-            c = (c * D) / (_x * N_COINS);
-        }
-        c = (c * D) / (Ann * N_COINS);
-        uint256 b = S_ + D / Ann;
-        uint256 y_prev;
-        uint256 y = D;
-
-        for (uint256 k = 0; k < 255; k++) {
-            y_prev = y;
-            y = (y * y + c) / (2 * y + b - D);
-            // Equality with the precision of 1
-            if (y > y_prev) {
-                if (y - y_prev <= 1) {
-                    break;
-                }
-            } else {
-                if (y_prev - y <= 1) {
-                    break;
-                }
-            }
-        }
-        return y;
-    }
-
-    function _calc_withdraw_one_coin(uint256 _token_amount, uint256 i) internal view returns (uint256, uint256) {
-        // First, need to calculate
-        // * Get current D
-        // * Solve Eqn against y_i for D - _token_amount
-        uint256 amp = get_A();
-        uint256 _fee = (fee * N_COINS) / (4 * (N_COINS - 1));
-        uint256[N_COINS] memory precisions = PRECISION_MUL;
-        uint256 total_supply = token.totalSupply();
-
-        uint256[N_COINS] memory xp = _xp();
-
-        uint256 D0 = get_D(xp, amp);
-        uint256 D1 = D0 - (_token_amount * D0) / total_supply;
-        uint256[N_COINS] memory xp_reduced = xp;
-
-        uint256 new_y = get_y_D(amp, i, xp, D1);
-        uint256 dy_0 = (xp[i] - new_y) / precisions[i]; // w/o fees
-
-        for (uint256 k = 0; k < N_COINS; k++) {
-            uint256 dx_expected;
-            if (k == i) {
-                dx_expected = (xp[k] * D1) / D0 - new_y;
-            } else {
-                dx_expected = xp[k] - (xp[k] * D1) / D0;
-            }
-            xp_reduced[k] -= (_fee * dx_expected) / FEE_DENOMINATOR;
-        }
-        uint256 dy = xp_reduced[i] - get_y_D(amp, i, xp_reduced, D1);
-        dy = (dy - 1) / precisions[i]; // Withdraw less to account for rounding errors
-
-        return (dy, dy_0 - dy);
-    }
-
-    function calc_withdraw_one_coin(uint256 _token_amount, uint256 i) external view returns (uint256) {
-        (uint256 dy, ) = _calc_withdraw_one_coin(_token_amount, i);
-        return dy;
-    }
-
+    /**
+     * @notice Withdraw a single coin from the pool
+     * @param _token_amount: Amount of LP tokens to burn in the withdrawal
+     * @param i: Index value of the coin to withdraw
+     * @param min_amount: Minimum amount of coin to receive
+     */
     function remove_liquidity_one_coin(
         uint256 _token_amount,
         uint256 i,
@@ -641,6 +765,11 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit RemoveLiquidityOne(msg.sender, i, _token_amount, dy);
     }
 
+    /**
+    * @notice Internal function to transfer tokens using function "safeTransfer" of IERC20.
+    * @param coin_address The address of the token to transfer.
+    * @param value The amount of tokens to transfer.
+    */
     function transfer_out(address coin_address, uint256 value) internal {
         if (coin_address == ROSE_ADDRESS) {
             _safeTransferROSE(msg.sender, value);
@@ -649,6 +778,11 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+    * @notice Internal function to transfer tokens using function "safeTransferFrom" of IERC20.
+    * @param coin_address The address of the token to transfer.
+    * @param value The amount of tokens to transfer.
+    */
     function transfer_in(address coin_address, uint256 value) internal {
         if (coin_address == ROSE_ADDRESS) {
             require(value == msg.value, "Inconsistent quantity");
@@ -657,19 +791,36 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+    * @notice Internal function to safely transfer ROSE tokens.
+    * @param to The address to transfer the ROSE tokens to.
+    * @param value The amount of ROSE tokens to transfer.
+    */
     function _safeTransferROSE(address to, uint256 value) internal {
         (bool success, ) = to.call{gas: rose_gas, value: value}("");
         require(success, "ROSE transfer failed");
     }
 
-    // Admin functions
+   /*╔══════════════════════════════╗
+     ║          ADMIN FUNCTIONS     ║
+     ╚══════════════════════════════╝*/
 
+    /**
+    * @notice set the gas limit for transferring ROSE tokens.
+    * @param _rose_gas The gas limit to be set.
+    * The gas limit should be within the acceptable range defined by MIN_ROSE_gas and MAX_ROSE_gas.
+    */
     function set_rose_gas(uint256 _rose_gas) external onlyOwner {
         require(_rose_gas >= MIN_ROSE_gas && _rose_gas <= MAX_ROSE_gas, "Illegal gas");
         rose_gas = _rose_gas;
         emit SetROSEGas(_rose_gas);
     }
 
+    /**
+     * @notice Ramp A up or down by setting a new A to take effect at a future point in time.
+     * @param _future_A: New future value of A
+     * @param _future_time: Timestamp at which new A should take effect
+     */
     function ramp_A(uint256 _future_A, uint256 _future_time) external onlyOwner {
         require(block.timestamp >= initial_A_time + MIN_RAMP_TIME, "dev : too early");
         require(_future_time >= block.timestamp + MIN_RAMP_TIME, "dev: insufficient time");
@@ -689,6 +840,9 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit RampA(_initial_A, _future_A, block.timestamp, _future_time);
     }
 
+    /**
+     * @notice Stop ramping A up or down and sets A to current A.
+     */
     function stop_rampget_A() external onlyOwner {
         uint256 current_A = get_A();
         initial_A = current_A;
@@ -700,6 +854,13 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit StopRampA(current_A, block.timestamp);
     }
 
+      /**
+     * @notice The method commits new fee params: these fees do not take immediate effect.
+     * @param new_fee: New pool fee
+     * @param new_admin_fee: New admin fee (expressed as a percentage of the pool fee)
+     * Both the pool fee and the admin_fee are capped by the constants MAX_FEE and MAX_ADMIN_FEE, respectively. 
+     * By default MAX_FEE is set at 50% and MAX_ADMIN_FEE at 100% (which is charged on the MAX_FEE amount).
+     */
     function commit_new_fee(uint256 new_fee, uint256 new_admin_fee) external onlyOwner {
         require(admin_actions_deadline == 0, "admin_actions_deadline must be 0"); // dev: active action
         require(new_fee <= MAX_FEE, "dev: fee exceeds maximum");
@@ -712,6 +873,9 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit CommitNewFee(admin_actions_deadline, new_fee, new_admin_fee);
     }
 
+     /**
+     * @notice Apply the previously committed new pool and admin fees for the pool.
+     */
     function apply_new_fee() external onlyOwner {
         require(block.timestamp >= admin_actions_deadline, "dev: insufficient time");
         require(admin_actions_deadline != 0, "admin_actions_deadline should not be 0");
@@ -723,11 +887,18 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit NewFee(fee, admin_fee);
     }
 
+    /**
+     * @notice Resets any previously committed new fees.
+     */
     function revert_new_parameters() external onlyOwner {
         admin_actions_deadline = 0;
         emit RevertParameters();
     }
 
+    /**
+     * @notice Get the admin balance for a single coin in the pool.
+     * @param i: Index of the coin to get admin balance for
+     */
     function admin_balances(uint256 i) external view returns (uint256) {
         if (coins[i] == ROSE_ADDRESS) {
             return address(this).balance - balances[i];
@@ -736,6 +907,9 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+     * @notice Withdraws and transfers admin fees of the pool to the pool owner.
+     */
     function withdraw_admin_fees() external onlyOwner {
         for (uint256 i = 0; i < N_COINS; i++) {
             uint256 value;
@@ -750,6 +924,9 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+     * @notice Donate all admin fees to the pool’s liquidity providers.
+     */
     function donate_admin_fees() external onlyOwner {
         for (uint256 i = 0; i < N_COINS; i++) {
             if (coins[i] == ROSE_ADDRESS) {
@@ -761,12 +938,18 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
         emit DonateAdminFees();
     }
 
+    /**
+     * @notice Pause a pool by setting the is_killed boolean flag to True.
+     */
     function kill_me() external onlyOwner {
         require(kill_deadline > block.timestamp, "Exceeded deadline");
         is_killed = true;
         emit Kill();
     }
 
+    /**
+     * @notice Unpause a pool that was previously paused, re-enabling exchanges.
+     */
     function unkill_me() external onlyOwner {
         is_killed = false;
         emit Unkill();

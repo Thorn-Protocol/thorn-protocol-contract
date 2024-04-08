@@ -3,29 +3,49 @@ pragma solidity >=0.7.6;
 pragma abicoder v2;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
-
 import './interfaces/IStableSwapRouter.sol';
 import './interfaces/IStableSwap.sol';
 import './libraries/SmartRouterHelper.sol';
 import './libraries/Constants.sol';
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 /// @title Stable Swap Router
-contract StableSwapRouter is IStableSwapRouter, Ownable, ReentrancyGuard {
+/// @notice A router contract for excuting stable swaps between different stablecoins pairs through mutiple pools
+///         It allows users to swap stable coins efficiently 
+/// @dev    This contract manages stable swap functionality, including executing swaps and caculating swap amounts
+
+contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGuardUpgradeable  {
     address public stableSwapFactory;
     address public stableSwapInfo;
 
+
+   /*╔══════════════════════════════╗
+     ║          EVENT               ║
+     ╚══════════════════════════════╝*/
+
     event SetStableSwap(address indexed factory, address indexed info);
 
-    constructor(
+     
+    /*╔══════════════════════════════╗
+      ║          CONSTRUCTOR         ║
+      ╚══════════════════════════════╝*/
+
+    function initialize(
         address _stableSwapFactory,
         address _stableSwapInfo
-    ) {
+    ) public initializer {
         stableSwapFactory = _stableSwapFactory;
         stableSwapInfo = _stableSwapInfo;
+        __Ownable_init_unchained();
+        __ReentrancyGuard_init_unchained();
+      
     }
+
+
+    /*╔══════════════════════════════╗
+      ║          ADMIN FUNCTIONS     ║
+      ╚══════════════════════════════╝*/
 
     /**
      * @notice Set Stable Swap Factory and Info
@@ -43,7 +63,11 @@ contract StableSwapRouter is IStableSwapRouter, Ownable, ReentrancyGuard {
         emit SetStableSwap(stableSwapFactory, stableSwapInfo);
     }
 
-    /// `refundETH` should be called at very end of all swaps
+    /*╔══════════════════════════════╗
+      ║          FUNCTIONS           ║
+      ╚══════════════════════════════╝*/
+
+   
     function _swap(
         address[] memory path,
         uint256[] memory flag
@@ -60,15 +84,19 @@ contract StableSwapRouter is IStableSwapRouter, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @param flag token amount in a stable swap pool. 2 for 2pool, 3 for 3pool
-     */
+    * @param path Array of token addresses in a stable swap pool.
+    * @param flag Flag indicating the pool type. Use '2' for a 2-pool, '3' for a 3-pool.
+    * @param amountIn Amount of the input token to be exchanged.
+    * @param amountOutMin Minimum expected amount of output tokens.
+    * @param to Recipient address to receive the exchanged tokens.
+    */
     function exactInputStableSwap(
         address[] calldata path,
         uint256[] calldata flag,
         uint256 amountIn,
         uint256 amountOutMin,
         address to
-    ) external payable override nonReentrant returns (uint256 amountOut) {
+    ) external payable  nonReentrant returns (uint256 amountOut) {
         IERC20 srcToken = IERC20(path[0]);
         IERC20 dstToken = IERC20(path[path.length - 1]);
 
@@ -96,46 +124,43 @@ contract StableSwapRouter is IStableSwapRouter, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @param flag token amount in a stable swap pool. 2 for 2pool, 3 for 3pool
+    * @param path Array of token addresses in a stable swap pool.
+    * @param flag Flag indicating the pool type. Use '2' for a 2-pool, '3' for a 3-pool.
+    * @param amountOut Amount of the input token to be exchanged.
+    * @param amountInMax Minimum expected amount of output tokens.
      */
-    function exactOutputStableSwap(
+    function getOutputStableSwap(
         address[] calldata path,
         uint256[] calldata flag,
         uint256 amountOut,
-        uint256 amountInMax,
-        address to
-    ) external payable override nonReentrant returns (uint256 amountIn) {
+        uint256 amountInMax
+    ) external view returns (uint256 amountIn) {
         amountIn = SmartRouterHelper.getStableAmountsIn(stableSwapFactory, stableSwapInfo, path, flag, amountOut)[0];
-        require(amountIn <= amountInMax);
+        require(amountIn <= amountInMax,"The amount of token is greater than expected");
+        return amountIn;
 
-        pay(path[0], msg.sender, address(this), amountIn);
-
-        _swap(path, flag);
-
-        // find and replace to addresses
-        if (to == Constants.MSG_SENDER) to = msg.sender;
-        else if (to == Constants.ADDRESS_THIS) to = address(this);
-
-        if (to != address(this)) pay(path[path.length - 1], address(this), to, amountOut);
+       
     }
 
-
+    /**
+        * @dev Internal function to facilitate token payments between addresses.
+        * If the payer is this contract, it directly transfers tokens to the recipient.
+        * If the payer is not this contract, it transfers tokens from the payer to the recipient.
+        * @param token The address of the token being transferred.
+        * @param payer The address of the entity initiating the payment.
+        * @param recipient The address of the entity receiving the payment.
+        * @param value The amount of tokens to be transferred.
+    */ 
     function pay(
         address token,
         address payer,
         address recipient,
         uint256 value
     ) internal {
-//        if (token == WETH9 && address(this).balance >= value) {
-//            // pay with WETH9
-//            IWETH9(WETH9).deposit{value: value}(); // wrap only what is needed to pay
-//            IWETH9(WETH9).transfer(recipient, value);
-//        } else
+
         if (payer == address(this)) {
-            // pay with tokens already in the contract (for the exact input multihop case)
             TransferHelper.safeTransfer(token, recipient, value);
         } else {
-            // pull payment
             TransferHelper.safeTransferFrom(token, payer, recipient, value);
         }
     }
