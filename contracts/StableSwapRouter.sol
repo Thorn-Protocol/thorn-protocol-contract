@@ -126,10 +126,29 @@ contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGua
     /**
     * @param path Array of token addresses in a stable swap pool.
     * @param flag Flag indicating the pool type. Use '2' for a 2-pool, '3' for a 3-pool.
-    * @param amountOut Amount of the input token to be exchanged.
-    * @param amountInMax Minimum expected amount of output tokens.
+    * @param amountIn Amount of the exchanged token .
+    * @param amountOutMin Minimum expected amount of output tokens.
      */
     function getOutputStableSwap(
+        address[] calldata path,
+        uint256[] calldata flag,
+        uint256 amountIn,
+        uint256 amountOutMin
+    ) external view returns (uint256 amountOut) {
+        amountOut = SmartRouterHelper.getStableAmountsOut(stableSwapFactory, path, flag, amountIn)[path.length-1];
+        require(amountOut >= amountOutMin,"The amount of token is smaller than expected");
+        return amountOut;
+
+       
+    }
+    
+    /**
+    * @param path Array of token addresses in a stable swap pool.
+    * @param flag Flag indicating the pool type. Use '2' for a 2-pool, '3' for a 3-pool.
+    * @param amountOut Amount of the redeemed token .
+    * @param amountInMax Maximum expected amount of output tokens.
+     */
+    function getInputStableSwap(
         address[] calldata path,
         uint256[] calldata flag,
         uint256 amountOut,
