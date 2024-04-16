@@ -6,6 +6,8 @@ import '../interfaces/IStableSwapFactory.sol';
 import '../interfaces/IStableSwapInfo.sol';
 import './LowGasSafeMath.sol';
 import './TransferHelper.sol';
+import '../interfaces/IStableSwap.sol';
+
 
 library SmartRouterHelper {
     using LowGasSafeMath for uint256;
@@ -58,6 +60,23 @@ library SmartRouterHelper {
             uint256 last = i - 1;
             (uint256 k, uint256 j, address swapContract) = getStableInfo(stableSwapFactory, path[last], path[i], flag[last]);
             amounts[last] = IStableSwapInfo(stableSwapInfo).get_dx(swapContract, k, j, amounts[i], type(uint256).max);
+        }
+    }
+
+    function getStableAmountsOut(
+        address stableSwapFactory,
+        address[] memory path,
+        uint256[] memory flag,
+        uint256 amountIn
+    ) public view returns (uint256[] memory amounts) {
+        uint256 length = path.length;
+        require(length >= 2, "getStableAmountsIn: incorrect length");
+
+        amounts = new uint256[](length);
+        amounts[0] = amountIn;
+        for (uint256 i =0;i< length-1; i++) {
+            (uint256 k, uint256 j, address swapContract) = getStableInfo(stableSwapFactory, path[i], path[i+1], flag[i]);
+             amounts[i+1] = IStableSwap(swapContract).get_dy( k, j, amounts[i]);
         }
     }
 

@@ -189,7 +189,7 @@ describe("test router", function () {
         const swap_amount=100000n;
         const maximum_exchanged_amount=10000000n;
 
-        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address], [2], swap_amount, maximum_exchanged_amount)
+        const tx = await stableSwapRouter.getInputStableSwap([BUSD.address, USDC.address], [2], swap_amount, maximum_exchanged_amount)
         console.log("amount: ", tx);
     })
 
@@ -198,7 +198,17 @@ describe("test router", function () {
         const swap_amount=100000n;
         const maximum_exchanged_amount=10000000n;
 
-        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], swap_amount, maximum_exchanged_amount)
+        const tx = await stableSwapRouter.getInputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], swap_amount, maximum_exchanged_amount)
+        console.log("amount: ", tx);
+    })
+
+
+    it("get output if swap 100000n BUSD->USDC in two pool and swap USDC amount-> USDT in three pool ", async () => {
+
+        const swap_amount=100000n;
+        const min_redeem_amount=0n;
+
+        const tx = await stableSwapRouter.getOutputStableSwap([BUSD.address, USDC.address, USDT.address], [2, 3], swap_amount, min_redeem_amount)
         console.log("amount: ", tx);
     })
 })
