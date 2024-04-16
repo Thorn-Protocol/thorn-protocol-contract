@@ -125,8 +125,8 @@ module.exports = {
     sapphireTestnet: {
       url: "https://testnet.sapphire.oasis.dev/",
       chainId: 0x5aff,
-      // gasPrice: 4e9,
-      // gas: 2e7,
+      // gasPrice: 100e9,
+      // gas: 1e7,
       accounts: [
         `0x${PRIVATE_KEY}`
       ]
