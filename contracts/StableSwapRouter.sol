@@ -26,6 +26,15 @@ contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGua
 
     event SetStableSwap(address indexed factory, address indexed info);
 
+    event StableExchange(
+        address indexed buyer,
+        uint256   amountIn,
+        address indexed token1,
+        uint256 amountOut,
+        address indexed token2,
+        address  recipient
+    );
+
      
     /*╔══════════════════════════════╗
       ║          CONSTRUCTOR         ║
@@ -121,6 +130,9 @@ contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGua
         else if (to == Constants.ADDRESS_THIS) to = address(this);
 
         if (to != address(this)) pay(address(dstToken), address(this), to, amountOut);
+
+        emit StableExchange(msg.sender,amountIn,path[0], amountOut,path[path.length - 1],to);
+
     }
 
     /**
