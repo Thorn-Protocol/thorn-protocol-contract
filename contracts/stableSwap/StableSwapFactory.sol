@@ -6,8 +6,8 @@ import "../interfaces/IStableSwap.sol";
 import "../interfaces/IStableSwapLP.sol";
 import "../interfaces/IStableSwapDeployer.sol";
 import "../interfaces/IStableSwapLPFactory.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 
 /**
  * @title Stable swap factory 
@@ -15,7 +15,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
  * @dev  This contract manages the creations of stable swap pools and provides access to their information
  */
 
-contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
+contract StableSwapFactory  {
 
     struct StableSwapPairInfo {
         address swapContract;
@@ -41,8 +41,18 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     IStableSwapDeployer public  SwapThreePoolDeployer;
 
     address constant ZEROADDRESS = address(0);
+    address public admin;
+
+     
+
+    
 
     uint256 public pairLength;
+
+     modifier onlyAdmin() {
+        require(msg.sender == admin, "Admin only");
+        _;
+    }
 
 
     
@@ -50,8 +60,12 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     /*╔══════════════════════════════╗
       ║          EVENT               ║
       ╚══════════════════════════════╝*/
-
+    
+     event CommitOwnership(address admin);
+    event ApplyOwnership(address admin);
     event NewStableSwapPair(address indexed swapContract, address tokenA, address tokenB, address tokenC, address LP);
+     event AdminshipTransferred(address indexed previousAdminr, address indexed newAdmin);
+
 
     /*╔══════════════════════════════╗
       ║          CONSTRUCTOR         ║
@@ -67,16 +81,14 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
      function initialize(
         IStableSwapLPFactory _LPFactory,
         IStableSwapDeployer _SwapTwoPoolDeployer,
-        IStableSwapDeployer _SwapThreePoolDeployer
+        IStableSwapDeployer _SwapThreePoolDeployer,
+        address _admin
 
-     ) public initializer {
+     ) public  {
         LPFactory = _LPFactory;
         SwapTwoPoolDeployer = _SwapTwoPoolDeployer;
         SwapThreePoolDeployer = _SwapThreePoolDeployer;
-        __Ownable_init_unchained();
-      __Pausable_init_unchained();
-
-
+        admin=_admin;
      }
 
     /*╔══════════════════════════════╗
@@ -87,13 +99,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     * @notice  onlyOwner
     * @dev     pauseContract
     */
-    function pauseContract() external onlyOwner(){ _pause();}
-
-    /**
-    * @notice  onlyOwner
-    * @dev     unpauseContract
-    */
-    function unPauseContract() external onlyOwner(){ _unpause();}
+    
 
     
     /**
@@ -111,7 +117,8 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         uint256 _A,
         uint256 _fee,
         uint256 _admin_fee
-    ) external onlyOwner {
+    ) external onlyAdmin {
+       
         require(_tokenA != ZEROADDRESS && _tokenB != ZEROADDRESS && _tokenA != _tokenB, "Illegal token");
         (address t0, address t1) = sortTokens(_tokenA, _tokenB);
         address LP = LPFactory.createSwapLP(t0, t1, ZEROADDRESS, address(this));
@@ -176,7 +183,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         uint256 _A,
         uint256 _fee,
         uint256 _admin_fee
-    ) external onlyOwner {
+    ) external onlyAdmin {
         require(
             _tokenA != ZEROADDRESS &&
                 _tokenB != ZEROADDRESS &&
@@ -197,7 +204,7 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
     * @notice Adds information about a stable swap contract.
     * @param _swapContract: Addresses of stable swap contracts.
     */
-    function addPairInfo(address _swapContract) external onlyOwner {
+    function addPairInfo(address _swapContract) external onlyAdmin {
         IStableSwap swap = IStableSwap(_swapContract);
         uint256 N_COINS = swap.N_COINS();
         if (N_COINS == 2) {
@@ -299,4 +306,26 @@ contract StableSwapFactory is OwnableUpgradeable,PausableUpgradeable {
         (address t0, address t1) = sortTokens(_tokenA, _tokenB);
         info = threePoolInfo[t0][t1];
     }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferAdminship(address newAdmin) public virtual onlyAdmin {
+        require(newAdmin != address(0), "Ownable: new Admin is the zero address");
+        _transferAdminship(newAdmin);
+    }
+
+    /**
+     * @dev Transfers Adminship of the contract to a new account (`newAdmin`).
+     * Internal function without access restriction.
+     */
+    function _transferAdminship(address _admin) internal onlyAdmin {
+        
+        address oldAdmin = admin;
+        admin = _admin;
+        emit AdminshipTransferred(oldAdmin, _admin);
+    }
+
+    
 }
