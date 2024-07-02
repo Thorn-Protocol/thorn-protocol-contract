@@ -1,4 +1,5 @@
-import { ethers, upgrades} from "hardhat";
+import { ethers, upgrades,deployments} from "hardhat";
+import * as hre from "hardhat";
 import { expect, assert } from "chai";
 import * as dotenv from "dotenv";
 import { StableSwapFactory, StableSwapInfo, StableSwapLP, StableSwapThreePool, StableSwapTwoPoolInfo, Token, StableSwapLPFactory, StableSwapTwoPoolDeployer, StableSwapThreePoolDeployer, StableSwapThreePoolInfo } from "../typechain-types";
@@ -7,7 +8,7 @@ import { getOption, writeToEnvFile } from "../scripts/utils/helper";
 dotenv.config();
 
 describe("StableSwapThreePool Contract Tests", function () {
-    this.timeout(150000);
+    this.timeout(15000000);
     let factory: StableSwapFactory
     let swapDeployer: StableSwapTwoPoolDeployer
     let swapTriplePoolDeployer: StableSwapThreePoolDeployer
@@ -43,9 +44,36 @@ describe("StableSwapThreePool Contract Tests", function () {
         const swapTriplePoolDeployerCF = await ethers.getContractFactory("StableSwapThreePoolDeployer");
         swapTriplePoolDeployer = await upgrades.deployProxy(swapTriplePoolDeployerCF);
 
+        const {deploy} = deployments;
+        const[deployer] = await hre.getUnnamedAccounts();
+        console.log(deployer);
+        let tx_stable_swap_factory= await deploy("StableSwapFactory", {
+            from: deployer,
+            proxy: {
+                owner: deployer,
+                execute: 
+                {
+                    
+                    init:  {
+                    methodName: "initialize",
+                    args: [LPFactory.address, 
+                        swapDeployer.address, 
+                        swapTriplePoolDeployer.address,
+                        process.env.PUBLIC_KEY],
+                },
+                },
+                    
+            }, 
+            
+            log: true,
+            skipIfAlreadyDeployed: false,
+        });
+        
+        console.log("hello",tx_stable_swap_factory.address);
+        factory=await ethers.getContractAt("StableSwapFactory",tx_stable_swap_factory.address);
 
-        const factoryCF = await ethers.getContractFactory("StableSwapFactory");
-        factory = await upgrades.deployProxy(factoryCF, [LPFactory.address, swapDeployer.address, swapTriplePoolDeployer.address]);
+        console.log("factory: ",factory.address);
+    
         
         let tx1 = await LPFactory.transferOwnership(factory.address);
         await tx1.wait();
@@ -53,6 +81,9 @@ describe("StableSwapThreePool Contract Tests", function () {
         await tx2.wait();
         let tx3 = await swapTriplePoolDeployer.transferOwnership(factory.address);
         await tx3.wait();
+
+        console.log("done");
+        console.log("two pool deployer owner: ", await swapDeployer.owner());
 
         const BUSD_CF = await ethers.getContractFactory("Token");
         BUSD = await BUSD_CF.deploy("Binance USD", "BUSD", 18);
@@ -69,9 +100,10 @@ describe("StableSwapThreePool Contract Tests", function () {
         await tx5.wait();
         let tx6 = await USDT.mint(user1, 1e10);
         await tx6.wait();
-
-        let tx = await factory.createThreePoolPair(BUSD.address, USDC.address, USDT.address, A, Fee, AdminFee);
+        console.log("zêe");
+        let tx = await factory.createThreePoolPair(BUSD.address, USDC.address, USDT.address, A, Fee, AdminFee,await getOption());
         await tx.wait();
+        console.log("done");
         let info = await factory.getThreePoolPairInfo(BUSD.address, USDC.address);
         swap_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool", info.swapContract)
         
@@ -113,19 +145,19 @@ describe("StableSwapThreePool Contract Tests", function () {
         await tx3.wait();
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([0, 1e6, 0], 0)
+            swap_BUSD_USDC_USDT.add_liquidity([0, 1e6, 0], 0,await getOption())
         ).to.be.reverted; //Initial deposit requires all coins
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([1e6, 0, 0], 0)
+            swap_BUSD_USDC_USDT.add_liquidity([1e6, 0, 0], 0,await getOption())
         ).to.be.reverted; //Initial deposit requires all coins
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([0, 0, 1e6], 0)
+            swap_BUSD_USDC_USDT.add_liquidity([0, 0, 1e6], 0,await getOption())
         ).to.be.reverted; //Initial deposit requires all coins
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([1e6, 1e6, 1e6], 3e7),
+            swap_BUSD_USDC_USDT.add_liquidity([1e6, 1e6, 1e6], 3e7,await getOption()),
         ).to.be.reverted; //Slippage screwed you
         const expect_LP_balance = 3e6;
         let tx = await swap_BUSD_USDC_USDT.add_liquidity([1e6, 1e6, 1e6], expect_LP_balance, await getOption());

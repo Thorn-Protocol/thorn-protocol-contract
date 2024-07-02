@@ -1,4 +1,5 @@
-import { ethers, upgrades} from "hardhat";
+import { ethers, upgrades,deployments} from "hardhat";
+import * as hre from "hardhat";
 import { expect, assert } from "chai";
 import * as dotenv from "dotenv";
 import { StableSwapFactory, StableSwapInfo, StableSwapLP, StableSwapTwoPool, StableSwapTwoPoolInfo, Token, StableSwapLPFactory, StableSwapTwoPoolDeployer, StableSwapThreePoolDeployer, StableSwapThreePoolInfo } from "../typechain-types";
@@ -44,6 +45,35 @@ describe("StableSwapTwoPool Contract Tests", function () {
         const factoryCF = await ethers.getContractFactory("StableSwapFactory");
         factory = await upgrades.deployProxy(factoryCF, [LPFactory.address, swapDeployer.address, swapTriplePoolDeployer.address]);
         
+        const {deploy} = deployments;
+        const[deployer] = await hre.getUnnamedAccounts();
+        console.log(deployer);
+        let tx_stable_swap_factory= await deploy("StableSwapFactory", {
+            from: deployer,
+            proxy: {
+                owner: deployer,
+                execute: 
+                {
+                       
+                    init:  {
+                    methodName: "initialize",
+                    args: [LPFactory.address, 
+                        swapDeployer.address, 
+                        swapTriplePoolDeployer.address,
+                        process.env.PUBLIC_KEY],
+                },
+                },
+                    
+            }, 
+            
+            log: true,
+            skipIfAlreadyDeployed: false,
+        });
+        
+       
+        factory=await ethers.getContractAt("StableSwapFactory",tx_stable_swap_factory.address);
+
+
         let tx1 = await LPFactory.transferOwnership(factory.address);
         await tx1.wait();
         let tx2 = await swapDeployer.transferOwnership(factory.address);

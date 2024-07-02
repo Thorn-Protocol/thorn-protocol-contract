@@ -1,4 +1,5 @@
-import { ethers, upgrades } from "hardhat";
+import { ethers, upgrades,deployments} from "hardhat";
+import * as hre from "hardhat";
 import * as dotenv from "dotenv";
 import { ERC20, StableSwapFactory, StableSwapInfo, StableSwapLPFactory, StableSwapRouter, StableSwapThreePool, StableSwapThreePoolDeployer, StableSwapThreePoolInfo, StableSwapTwoPool, StableSwapTwoPoolDeployer, StableSwapTwoPoolInfo, Token } from "../typechain-types";
 import { getOption } from "../scripts/utils/helper";
@@ -65,13 +66,36 @@ describe("test router", function () {
         stableSwapLPFactory = await upgrades.deployProxy(stableSwapLPFactory_FC);
         await stableSwapLPFactory.deployed();
 
-        //deploy StableSwapFactory Contractd 
-        const stableSwapFactory_FC = await ethers.getContractFactory("StableSwapFactory");
-        stableSwapFactory = await upgrades.deployProxy(stableSwapFactory_FC, [
-            stableSwapLPFactory.address,
-            stableSwapTwoDeployer.address,
-            stableSwapThreeDeployer.address
-        ]);
+        //deploy StableSwapFactory Contract
+        const {deploy} = deployments;
+        const[deployer] = await hre.getUnnamedAccounts();
+        console.log(deployer);
+        let tx_stable_swap_factory= await deploy("StableSwapFactory", {
+            from: deployer,
+            proxy: {
+                owner: deployer,
+                execute: 
+                {
+                       
+                    init:  {
+                    methodName: "initialize",
+                    args: [
+                        stableSwapLPFactory.address,
+                        stableSwapTwoDeployer.address,
+                        stableSwapThreeDeployer.address,
+                        process.env.PUBLIC_KEY],
+                },
+                },
+                    
+            }, 
+            
+            log: true,
+            skipIfAlreadyDeployed: false,
+        });
+        
+       
+        stableSwapFactory=await ethers.getContractAt("StableSwapFactory",tx_stable_swap_factory.address);
+
 
         // transfer ownership to StableSwapFactory
         let tx1 = await stableSwapLPFactory.transferOwnership(stableSwapFactory.address);
