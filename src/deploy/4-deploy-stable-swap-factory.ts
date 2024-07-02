@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import * as dotenv from "dotenv";
-import { writeToEnvFile } from "../utils/helper";
+import { writeToEnvFile } from "../../scripts/utils/helper";
 
 dotenv.config();
 

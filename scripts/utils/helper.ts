@@ -71,6 +71,9 @@ export async function getOption() {
     if (networkName === "sapphireMainnet") {
         gasPrice = await getGasPrice(); 
     }
+    if (networkName === "sapphireTestnet") {
+        return {gasLimit: 1e7, gasPrice: 100e9};
+    }
 
     const nonce = await getMainOwner().getTransactionCount();
     const options = { gasPrice: gasPrice, nonce: nonce };
