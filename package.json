@@ -43,6 +43,7 @@
     "bignumber.js": "^9.1.2",
     "dotenv": "^16.3.1",
     "ethers": "^5.6.8",
+    "hardhat-deploy": "^0.12.4",
     "hardhat-interface-generator": "^0.0.6"
   }
 }

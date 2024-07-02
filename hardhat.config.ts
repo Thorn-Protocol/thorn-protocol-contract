@@ -11,7 +11,7 @@ import "@nomiclabs/hardhat-waffle";
 import "hardhat-interface-generator";
 import { HardhatUserConfig } from "hardhat/types";
 import * as dotenv from "dotenv";
-
+import 'hardhat-deploy';
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -145,6 +145,7 @@ module.exports = {
     sources: "./contracts",
     tests: "./test",
     cache: "./cache",
+    deploy:"src/deploy-upgrades",
     artifacts: "./artifacts"
   }
 };
