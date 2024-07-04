@@ -5,6 +5,7 @@ pragma abicoder v2;
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './interfaces/IStableSwapRouter.sol';
 import './interfaces/IStableSwap.sol';
+import './interfaces/IWROSE.sol';
 import './libraries/SmartRouterHelper.sol';
 import './libraries/Constants.sol';
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -16,6 +17,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 /// @dev    This contract manages stable swap functionality, including executing swaps and caculating swap amounts
 
 contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGuardUpgradeable  {
+    address public constant WROSE=0xB759a0fbc1dA517aF257D5Cf039aB4D86dFB3b94;
     address public stableSwapFactory;
     address public stableSwapInfo;
 
@@ -188,11 +190,14 @@ contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGua
         address recipient,
         uint256 value
     ) internal {
-
-        if (payer == address(this)) {
+        if(token==WROSE && address(this).balance>=value){
+            IWROSE(WROSE).deposit{value:value}();
+            IWROSE(WROSE).transfer(recipient,value);
+        }else if (payer == address(this)) {
             TransferHelper.safeTransfer(token, recipient, value);
         } else {
             TransferHelper.safeTransferFrom(token, payer, recipient, value);
         }
     }
+
 }
