@@ -320,7 +320,7 @@ contract StableSwapFactory  {
      * @dev Transfers Adminship of the contract to a new account (`newAdmin`).
      * Internal function without access restriction.
      */
-    function _transferAdminship(address _admin) internal onlyAdmin {
+    function _transferAdminship(address _admin) internal virtual {
         
         address oldAdmin = admin;
         admin = _admin;
