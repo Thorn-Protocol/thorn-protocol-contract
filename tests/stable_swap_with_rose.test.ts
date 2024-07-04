@@ -3,7 +3,7 @@ import { expect, assert } from "chai";
 import * as dotenv from "dotenv";
 import { StableSwapFactory, StableSwapInfo, StableSwapLP, StableSwapTwoPool, StableSwapTwoPoolInfo, Token, StableSwapLPFactory, StableSwapTwoPoolDeployer, StableSwapThreePoolDeployer, StableSwapThreePoolInfo } from "../typechain-types";
 import { BigNumber} from "ethers";
-import { getOption, writeToEnvFile } from "../scripts/utils/helper";
+import { getOption, writeToEnvFile } from "../src/utils/helper";
 dotenv.config();
 
 describe("StableSwapTwoPool Contract Tests with ROSE", function () {

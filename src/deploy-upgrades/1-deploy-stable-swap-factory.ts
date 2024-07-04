@@ -3,7 +3,7 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {deployments} from'hardhat';
 import {DeployFunction} from 'hardhat-deploy/types'
 import * as dotenv from "dotenv";
-import { writeToEnvFile } from "../../scripts/utils/helper";
+import { writeToEnvFile } from "../utils/helper";
 
 dotenv.config();
 
@@ -13,7 +13,8 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = deployments;
   const[deployer] = await hre.getUnnamedAccounts();
   console.log(deployer);
-  let tx= await deploy("StableSwapFactory", {
+  let tx= await deploy("StableSwapFactoryv1", {
+    contract: "StableSwapFactory",
     from: deployer,
     proxy: {
         owner: deployer,
@@ -36,7 +37,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
     skipIfAlreadyDeployed: false,
   });
-  console.log("hello",tx.address);
+  writeToEnvFile("STABLE_SWAP_FACTORY", tx.address);
 };
-deploy.tags = ['stableswapFactory'];
+deploy.tags = ['StableswapFactory'];
 export default deploy;

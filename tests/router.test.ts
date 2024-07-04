@@ -2,7 +2,7 @@ import { ethers, upgrades,deployments} from "hardhat";
 import * as hre from "hardhat";
 import * as dotenv from "dotenv";
 import { ERC20, StableSwapFactory, StableSwapInfo, StableSwapLPFactory, StableSwapRouter, StableSwapThreePool, StableSwapThreePoolDeployer, StableSwapThreePoolInfo, StableSwapTwoPool, StableSwapTwoPoolDeployer, StableSwapTwoPoolInfo, Token } from "../typechain-types";
-import { getOption } from "../scripts/utils/helper";
+import { getOption, writeToEnvFile } from "../src/utils/helper";
 dotenv.config();
 
 describe("test router", function () {
