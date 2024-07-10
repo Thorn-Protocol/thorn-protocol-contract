@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
 interface IWROSE {
@@ -5,5 +6,5 @@ interface IWROSE {
 
     function transfer(address to, uint256 value) external returns (bool);
 
-    function withdraw(uint256) external;
+    function withdraw(uint256 amount) external;
 }

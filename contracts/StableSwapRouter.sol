@@ -17,7 +17,9 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 /// @dev    This contract manages stable swap functionality, including executing swaps and caculating swap amounts
 
 contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGuardUpgradeable  {
-    address public constant WROSE=0xB759a0fbc1dA517aF257D5Cf039aB4D86dFB3b94;
+    address public constant WROSE=0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3;
+    // address public constant WROSE=0xB759a0fbc1dA517aF257D5Cf039aB4D86dFB3b94; //for testnet
+
     address public stableSwapFactory;
     address public stableSwapInfo;
 
@@ -37,6 +39,8 @@ contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGua
         address  recipient
     );
 
+    receive() external payable {
+    }
      
     /*╔══════════════════════════════╗
       ║          CONSTRUCTOR         ║
@@ -191,9 +195,13 @@ contract StableSwapRouter is IStableSwapRouter, OwnableUpgradeable,ReentrancyGua
         uint256 value
     ) internal {
         if(token==WROSE && address(this).balance>=value){
-            IWROSE(WROSE).deposit{value:value}();
-            IWROSE(WROSE).transfer(recipient,value);
-        }else if (payer == address(this)) {
+            IWROSE(WROSE).deposit{value:value}(); //lấy wrose về router
+            IWROSE(WROSE).transfer(recipient,value); //từ router transfer cho pool
+        }else if(token == WROSE && recipient == msg.sender){
+            IWROSE(WROSE).withdraw(value);
+            TransferHelper.safeTransferETH(recipient, value);
+        }
+        else if (payer == address(this)) {
             TransferHelper.safeTransfer(token, recipient, value);
         } else {
             TransferHelper.safeTransferFrom(token, payer, recipient, value);
