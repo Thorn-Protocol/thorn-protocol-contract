@@ -17,7 +17,7 @@ async function deploy() {
 }
 
 async function setUp() {
-    var two_pool_deployer = await ethers.getContractAt("StableSwapTwoPoolDeployer", process.env.STABLE_SWAP_TWO_POOL_DEPLOYER);
+    var two_pool_deployer = await ethers.getContractAt("StableSwapTwoPoolDeployer", process.env.STABLE_SWAP_TWO_POOL_DEPLOYER!);
     var stable_swap_factory_address = process.env.STABLE_SWAP_FACTORY!;
 
     var tx = await two_pool_deployer.transferOwnership(stable_swap_factory_address);

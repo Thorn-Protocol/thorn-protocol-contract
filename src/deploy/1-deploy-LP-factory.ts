@@ -17,7 +17,7 @@ async function deploy() {
 }
 
 async function setUp() {
-    var LP_factory = await ethers.getContractAt("StableSwapLPFactory", process.env.STABLE_SWAP_LP_FACTORY);
+    var LP_factory = await ethers.getContractAt("StableSwapLPFactory", process.env.STABLE_SWAP_LP_FACTORY!);
     var stable_swap_factory_address = process.env.STABLE_SWAP_FACTORY!;
 
     var tx = await LP_factory.transferOwnership(stable_swap_factory_address);
