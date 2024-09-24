@@ -7,9 +7,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@typechain/ethers-v5": "^9.0.0",
-    "@typechain/hardhat": "^9.0.0",
-    "@types/mocha": "^10.0.7",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
+    "@typechain/hardhat": "^7.0.0",
+    "@types/mocha": "^10.0.6",
+    "ethers": "^5.6.8",
     "hardhat": "^2.20.1",
     "hardhat-contract-sizer": "^2.10.0",
     "prettier": "^3.0.2",
@@ -25,14 +26,10 @@
     "size": "yarn hardhat size-contracts",
     "clean": "yarn hardhat clean",
     "fcompile": "yarn clean && yarn compile",
-    "format": "yarn prettier -w contracts/**/*"
+    "format": "yarn prettier -w contracts/*/"
   },
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
-    "@ethersproject/abstract-provider": "^5.7.0",
-    "@ethersproject/abstract-signer": "^5.7.0",
-    "@ethersproject/bytes": "^5.7.0",
-    "@ethersproject/transactions": "^5.7.0",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-waffle": "^2.0.6",
     "@openzeppelin/contract-loader": "^0.6.3",
@@ -40,11 +37,11 @@
     "@openzeppelin/contracts-upgradeable": "^4.7.3",
     "@openzeppelin/hardhat-upgrades": "^1.20.0",
     "@truffle/hdwallet-provider": "^2.1.15",
-    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/ethers-v5": "11.1.2",
     "bignumber.js": "^9.1.2",
     "dotenv": "^16.3.1",
-    "ethers": "^5.6.8",
     "hardhat-deploy": "^0.12.4",
-    "hardhat-interface-generator": "^0.0.6"
+    "hardhat-interface-generator": "^0.0.6",
+    "ipfs-http-client": "^60.0.1"
   }
 }

@@ -1,22 +1,38 @@
 import "@typechain/hardhat";
 import "hardhat-contract-sizer";
 import "@nomiclabs/hardhat-ethers";
-import "@ethersproject/abstract-provider";
-import "@ethersproject/abstract-signer";
-import "@ethersproject/transactions";
-import "@ethersproject/bytes";
-import "@truffle/hdwallet-provider";
 import "@openzeppelin/hardhat-upgrades";
-import "@nomiclabs/hardhat-waffle";
 import "hardhat-interface-generator";
 import { HardhatUserConfig } from "hardhat/types";
-import * as dotenv from "dotenv";
 import 'hardhat-deploy';
+import * as dotenv from "dotenv";
+import "@nomicfoundation/hardhat-network-helpers";
+import "hardhat-interface-generator";
+import "@nomiclabs/hardhat-waffle"
+
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const PRIVATE_KEY_1=process.env.PRIVATE_KEY_1;
+const PRIVATE_KEY_2=process.env.PRIVATE_KEY_2;
+const PRIVATE_KEY_3=process.env.PRIVATE_KEY_3;
+const TEST_HDWALLET = {
+  mnemonic: "test test test test test test test test test test test junk",
+  path: "m/44'/60'/0'/0",
+  initialIndex: 0,
+  count: 6,
+  passphrase: "",
+  accountsBalance: "10000000000000000000000"
+};
 
-module.exports = {
+const config:HardhatUserConfig = {
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    deploy:"src/deploy_upgrade",
+    artifacts: "./artifacts"
+  },
   solidity: {
     compilers: [
       {
@@ -70,46 +86,33 @@ module.exports = {
 
   networks: {
     hardhat: {
-      forking: {
-        url: "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
-        blockNumber: 14390000
-      },
+      // forking: {
+      //   url: "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
+      //   blockNumber: 14390000
+      // },
       allowUnlimitedContractSize: true,
       // forking: {
       //   url: "https://hardcore-mayer:untrue-puppet-yearly-early-widow-spud@nd-723-346-173.p2pify.com",
       // },
       // chainId: 97,
-      accounts: [
-        {
-          privateKey:
-              "36f1ea3519a6949576c242d927dd0c74650554cdfaedbcd03fb3a80c558c03de",
-
-          balance: "100000000000000000000000000000",
-        },
-        {
-          privateKey:
-              "37235af6356e58fd30610f5b5b3979041e029fccdfce7bf05ee868d3f7c114ec",
-
-          balance: "100000000000000000000000000000",
-        },
-        {
-          privateKey:
-              "ddc0dbf76bd1652473690e3e67cad62a42407fa3068a0710b80481be4ef2f3bb",
-
-          balance: "100000000000000000000000000000",
-        }
-      ]
-      // gasPrice: 5000000000,
-      // gas: 25e6,
+      chainId: 31337,
+      accounts: TEST_HDWALLET,
+      gasPrice: 5000000000,
+      gas: 25e6,
+      // tags: ["hardhat"],
+      // saveDeployments: true,
     },
     bscTestnet: {
       url: process.env.PROVIDER_URL,
       chainId: 97,
-      gasPrice: 1e10,
-      // gas: 2e7,
+      gasPrice: 20000000000,
+      gas: 4e7,
       // gas: 1e7,
       accounts: [
-        `0x${PRIVATE_KEY}`
+        `0x${PRIVATE_KEY}`,
+        `0x${PRIVATE_KEY_1}`,
+        `0x${PRIVATE_KEY_2}`,
+        
       ]
     },
     mainnet: {
@@ -119,17 +122,22 @@ module.exports = {
       // gas: 2e7,
       // gas: 1e5,
       accounts: [
-        `0x${PRIVATE_KEY}`
+        `0x${PRIVATE_KEY}`,
       ]
     },
     sapphireTestnet: {
       url: "https://testnet.sapphire.oasis.dev/",
       chainId: 0x5aff,
-      // gasPrice: 100e9,
-      // gas: 1e7,
+      gasPrice: 100e9,
+      gas: 1e7,
       accounts: [
-        `0x${PRIVATE_KEY}`
-      ]
+        `0x${PRIVATE_KEY}`,
+        `0x${PRIVATE_KEY_1}`,
+        `0x${PRIVATE_KEY_2}`,
+        `0x${PRIVATE_KEY_3}`
+      ],
+     
+      // tags:["sapphireTestnet"]
     },
     sapphireMainnet: {
       url: "https://sapphire.oasis.io/",
@@ -141,12 +149,12 @@ module.exports = {
       ]
     }
   },
-  paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    deploy:"src/deploy-upgrades",
-    artifacts: "./artifacts"
-  }
+  // paths: {
+  //   sources: "./contracts",
+  //   tests: "./test",
+  //   cache: "./cache",
+  //   artifacts: "./artifacts"
+  // }
 };
 
+export default config;
