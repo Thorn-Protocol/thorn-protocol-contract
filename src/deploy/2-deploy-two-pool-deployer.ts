@@ -7,7 +7,7 @@ dotenv.config();
 async function deploy() {
 
     const stableSwapTwoPoolDeployerFactory = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
-    const stableSwapTwoPoolDeployerContract = await upgrades.deployProxy(stableSwapTwoPoolDeployerFactory);
+    const stableSwapTwoPoolDeployerContract = await stableSwapTwoPoolDeployerFactory.deploy();
     await stableSwapTwoPoolDeployerContract.deployed();
     
     console.log("Two pool deployer deploy at: ", stableSwapTwoPoolDeployerContract.address);

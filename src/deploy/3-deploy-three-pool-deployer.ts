@@ -7,7 +7,7 @@ dotenv.config();
 async function deploy() {
 
     const stableSwapThreePoolDeployerFactory = await ethers.getContractFactory("StableSwapThreePoolDeployer");
-    const stableSwapThreePoolDeployerContract = await upgrades.deployProxy(stableSwapThreePoolDeployerFactory);
+    const stableSwapThreePoolDeployerContract = await stableSwapThreePoolDeployerFactory.deploy();
     await stableSwapThreePoolDeployerContract.deployed();
     
     console.log("Three pool deployer deploy at: ", stableSwapThreePoolDeployerContract.address);

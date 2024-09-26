@@ -8,15 +8,11 @@ async function deploy() {
 
     const StableSwapRouterFactory = await ethers.getContractFactory("StableSwapRouter",{
     libraries:{
-        SmartRouterHelper: process.env.SMART_ROUTER_HELPER_LIBRARY,
+        SmartRouterHelper: process.env.SMART_ROUTER_HELPER_LIBRARY!,
     }
     });
-    const StableSwapRouterContract =await upgrades.deployProxy(
-        StableSwapRouterFactory, 
-        [process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO],
-        {
-            unsafeAllowLinkedLibraries: true
-        }
+    const StableSwapRouterContract =await StableSwapRouterFactory.deploy(
+        process.env.STABLE_SWAP_FACTORY,process.env.STABLE_SWAP_INFO
     );
     await StableSwapRouterContract.deployed();
     

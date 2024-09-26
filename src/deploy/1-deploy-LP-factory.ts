@@ -7,7 +7,7 @@ dotenv.config();
 async function deploy() {
 
     const stableSwapLPFactory = await ethers.getContractFactory("StableSwapLPFactory");
-    const stableSwapLPFactoryContract = await upgrades.deployProxy(stableSwapLPFactory);
+    const stableSwapLPFactoryContract = await stableSwapLPFactory.deploy();
     await stableSwapLPFactoryContract.deployed();
     
     console.log("LP factory deploy at: ", stableSwapLPFactoryContract.address);
