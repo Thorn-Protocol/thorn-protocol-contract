@@ -3,8 +3,8 @@ pragma solidity ^0.8.10;
 
 
 import "./plain-pools/StableSwapThreePool.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
  * @title stable swap three pool deployer
@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
  * @dev This contract manages the deployment of pool, including sorting the pool tokens
  */
 
-contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
+contract StableSwapThreePoolDeployer is Ownable,Pausable {
     uint256 public constant N_COINS = 3;
 
     
@@ -20,13 +20,7 @@ contract StableSwapThreePoolDeployer is OwnableUpgradeable,PausableUpgradeable {
     /*╔══════════════════════════════╗
       ║          CONSTRUCTOR         ║
       ╚══════════════════════════════╝*/
-    function initialize() public initializer {
-
-      __Ownable_init_unchained();
-      __Pausable_init_unchained();
-        
-
-    }
+    constructor(){}
 
 
     /*╔══════════════════════════════╗

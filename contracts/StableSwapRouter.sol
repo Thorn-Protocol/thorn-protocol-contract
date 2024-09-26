@@ -8,8 +8,8 @@ import "./interfaces/IStableSwap.sol";
 import "./interfaces/IWROSE.sol";
 import "./libraries/SmartRouterHelper.sol";
 import "./libraries/Constants.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "hardhat/console.sol";
 
 /// @title Stable Swap Router
@@ -19,8 +19,8 @@ import "hardhat/console.sol";
 
 contract StableSwapRouter is
     IStableSwapRouter,
-    OwnableUpgradeable,
-    ReentrancyGuardUpgradeable
+    Ownable,
+    ReentrancyGuard
 {
     address public WROSE;
    
@@ -29,6 +29,7 @@ contract StableSwapRouter is
     address public stableSwapInfo;
 
     address public constant ROSE=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    bool public isKill;
 
     /*╔══════════════════════════════╗
      ║          EVENT               ║
@@ -51,14 +52,14 @@ contract StableSwapRouter is
       ║          CONSTRUCTOR         ║
       ╚══════════════════════════════╝*/
 
-    function initialize(
+    constructor(
         address _stableSwapFactory,
         address _stableSwapInfo
-    ) public initializer {
+    ){
         stableSwapFactory = _stableSwapFactory;
         stableSwapInfo = _stableSwapInfo;
-        __Ownable_init_unchained();
-        __ReentrancyGuard_init_unchained();
+        isKill=false;
+
     }
 
     /*╔══════════════════════════════╗
@@ -114,7 +115,7 @@ contract StableSwapRouter is
         uint256 amountOutMin,
         address to
     ) external payable nonReentrant returns (uint256 amountOut) {
-        // IERC20 srcToken = IERC20(path[0]);
+        require(!isKill, "Contract is killed");
         address srcToken=  path[0];
         address dstToken = path[path.length - 1];
         
@@ -237,5 +238,13 @@ contract StableSwapRouter is
             TransferHelper.safeTransferFrom(token, payer, recipient, value);
         }
     }
+
+    function kill() external onlyOwner {
+        isKill = true;
+    }
+    function unKill() external onlyOwner {
+        isKill = false;
+    }
+
 
 }

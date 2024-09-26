@@ -2,8 +2,8 @@
 pragma solidity ^0.8.10;
 
 import "./StableSwapLP.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
  * @title stable swap LP factory 
@@ -11,7 +11,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
  * @dev This contract manages the creation of LP tokens for stable swap pools
  */
 
-contract StableSwapLPFactory is OwnableUpgradeable,PausableUpgradeable {
+contract StableSwapLPFactory is Ownable,Pausable {
 
 
     /*╔══════════════════════════════╗
@@ -26,12 +26,7 @@ contract StableSwapLPFactory is OwnableUpgradeable,PausableUpgradeable {
       ║          CONSTRUCTOR         ║
       ╚══════════════════════════════╝*/
 
-    function initialize() public initializer {
-
-      __Ownable_init_unchained();
-      __Pausable_init_unchained();
-
-
+    constructor() {
     }
 
 
