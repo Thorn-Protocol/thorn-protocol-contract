@@ -31,8 +31,9 @@ describe("test router", function () {
     let accounts: SignerWithAddress []; 
     let ROSE="0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
     let WROSE: WNATIVE;
-    let ADD_AMOUNT=ethers.utils.parseUnits('2000',18);
-    let ADD_AMOUNT_1=ethers.utils.parseUnits('1000',18);
+    let ADD_AMOUNT=ethers.utils.parseUnits('1000',18);
+    let ADD_AMOUNT_1=ethers.utils.parseUnits('10',18);
+    let ADD_AMOUNT_2=ethers.utils.parseUnits('5',18);
 
     before(async () => {
         accounts = await ethers.getSigners();
@@ -65,13 +66,13 @@ describe("test router", function () {
 
         // Deploy 3Deployer, 2Deployer, and LP contracts
         const stableSwapThreePoolDeployerFactory = await ethers.getContractFactory("StableSwapThreePoolDeployer");
-        stableSwapThreeDeployer = await upgrades.deployProxy(stableSwapThreePoolDeployerFactory) as unknown as StableSwapThreePoolDeployer;
+        stableSwapThreeDeployer = await stableSwapThreePoolDeployerFactory.deploy() as unknown as StableSwapThreePoolDeployer;
 
         const stableSwapTwoPoolDeployerFactory = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
-        stableSwapTwoDeployer = await upgrades.deployProxy(stableSwapTwoPoolDeployerFactory) as unknown as StableSwapTwoPoolDeployer;
+        stableSwapTwoDeployer = await stableSwapTwoPoolDeployerFactory.deploy() as unknown as StableSwapTwoPoolDeployer;
 
         const stableSwapLPFactory_FC = await ethers.getContractFactory("StableSwapLPFactory");
-        stableSwapLPFactory = await upgrades.deployProxy(stableSwapLPFactory_FC) as unknown as StableSwapLPFactory;
+        stableSwapLPFactory = await stableSwapLPFactory_FC.deploy() as unknown as StableSwapLPFactory;
         await stableSwapLPFactory.deployed();
 
         
@@ -129,9 +130,6 @@ describe("test router", function () {
         
 
         // Add liquidity
-
-
-
         await (await stROSE.approve(stableSwap2Pool_ROSE_stROSE.address, ADD_AMOUNT)).wait();
         await (await stableSwap2Pool_ROSE_stROSE.add_liquidity([ADD_AMOUNT, ADD_AMOUNT],0,{ value: ADD_AMOUNT })).wait();
 
@@ -158,21 +156,19 @@ describe("test router", function () {
         // Create smart contract router
         const SmartRouterHelperFactory = await ethers.getContractFactory("SmartRouterHelper");
         const SmartRouterHelperContract = await SmartRouterHelperFactory.deploy();
-
+        console.log("deploy router1");
         const stableSwapRouterFactory = await ethers.getContractFactory("StableSwapRouter", {
             libraries: {
                 SmartRouterHelper: SmartRouterHelperContract.address,
             }
         });
-        WROSE= await ethers.getContractFactory("WNATIVE").then((factory) => factory.attach(ROSE)) as WNATIVE;
-        console.log(WROSE.address);
-        stableSwapRouter = await upgrades.deployProxy(stableSwapRouterFactory, [
+        
+        console.log("deploy router2");
+        stableSwapRouter = await stableSwapRouterFactory.deploy(
             stableSwapFactory.address,
             stableSwapInfo.address
 
-        ], {
-            unsafeAllowLinkedLibraries: true
-        }) as StableSwapRouter;
+        ) as unknown as StableSwapRouter;
     });
     after( () => {
         const deploymentFolder = path.join(__dirname, '../deployments');
@@ -185,7 +181,7 @@ describe("test router", function () {
         
     });
 
-    it("swap ROSE to stROSE and vice versa", async () => {
+    it("should get corrrect ROSE after swapping ROSE to stROSE and vice versa", async () => {
         let before_stROSE: BigNumber = await stROSE.balanceOf(accounts[0].address);  
         
         await expect(
@@ -197,29 +193,52 @@ describe("test router", function () {
         let after_stROSE: BigNumber = await stROSE.balanceOf(accounts[0].address);
 
       
-        expect(after_stROSE.sub(before_stROSE)).to.be.closeTo(ADD_AMOUNT_1, ethers.utils.parseUnits( '3', 18));
+        expect(after_stROSE.sub(before_stROSE)).to.be.closeTo(ADD_AMOUNT_1, ADD_AMOUNT_1.mul(6).div(10000));
 
         let before_ROSE: BigNumber = await ethers.provider.getBalance(accounts[0].address);
-        console.log(ROSE);
 
         await (await stROSE.approve(stableSwapRouter.address, ADD_AMOUNT_1)).wait();
-        await(await stableSwapRouter.exactInputStableSwap([stROSE.address,ROSE], [2],ADD_AMOUNT_1, 0,accounts[0].address)).wait();
+        let tx=await stableSwapRouter.exactInputStableSwap([stROSE.address,ROSE], [2],ADD_AMOUNT_1, 0,accounts[0].address);
+        const receipt = await tx.wait();
+        let gasUsed = BigNumber.from(receipt.gasUsed).mul(tx.gasPrice!);
+        console.log("gas used: ", gasUsed.toString());
 
         let after_ROSE: BigNumber = await ethers.provider.getBalance(accounts[0].address);
 
-        expect(after_ROSE.sub(before_ROSE)).to.be.closeTo(ADD_AMOUNT_1, ethers.utils.parseUnits( '3', 18));
+        expect(after_ROSE.sub(before_ROSE)).to.be.closeTo(ADD_AMOUNT_1.sub(gasUsed), ADD_AMOUNT_1.mul(6).div(10000));
 
     })
 
-    it("swap stROSE to pROSE and vice versa", async () => {
+    it("should get correct stROSE after swapping stROSE to pROSE and vice versa", async () => {
         let p_Rose_before=await pROSE.balanceOf(accounts[0].address);
         await (await stROSE.approve(stableSwapRouter.address, ADD_AMOUNT_1)).wait();
         await(await stableSwapRouter.exactInputStableSwap([stROSE.address,ROSE,pROSE.address], [2,2],ADD_AMOUNT_1, 0,accounts[0].address)).wait();
         let p_ROSE_after=await pROSE.balanceOf(accounts[0].address);
 
-        expect(p_ROSE_after.sub(p_Rose_before)).to.be.closeTo(ADD_AMOUNT_1, ethers.utils.parseUnits( '5', 18));
+        expect(p_ROSE_after.sub(p_Rose_before)).to.be.closeTo(ADD_AMOUNT_1, ADD_AMOUNT_1.div(800));
+    })
+
+    it("should get the correct amount out and in",async()=>{
+        let amountOut=await stableSwapRouter.getOutputStableSwap([ROSE,stROSE.address],[2],ADD_AMOUNT_2,0);
+        expect(amountOut).to.be.closeTo(ADD_AMOUNT_2,ADD_AMOUNT_2.mul(6).div(10000));
+
+        amountOut=await stableSwapRouter.getOutputStableSwap([stROSE.address,ROSE],[2],ADD_AMOUNT_2,0);
+        expect(amountOut).to.be.closeTo(ADD_AMOUNT_2,ADD_AMOUNT_2.mul(6).div(10000));
+
+        amountOut=await stableSwapRouter.getOutputStableSwap([stROSE.address,ROSE,pROSE.address],[2,2],ADD_AMOUNT_2,0);
+        expect(amountOut).to.be.closeTo(ADD_AMOUNT_2,ADD_AMOUNT_2.div(800));
 
 
+
+
+        let amountIn=await stableSwapRouter.getInputStableSwap([stROSE.address,ROSE,pROSE.address],[2,2],ADD_AMOUNT_2,ADD_AMOUNT);
+        expect(amountIn).to.be.closeTo(ADD_AMOUNT_2,ADD_AMOUNT_2.div(800));
+
+        amountIn=await stableSwapRouter.getInputStableSwap([ROSE,stROSE.address],[2],ADD_AMOUNT_2,ADD_AMOUNT);
+        expect(amountIn).to.be.closeTo(ADD_AMOUNT_2,ADD_AMOUNT_2.mul(6).div(10000));
+
+        amountIn=await stableSwapRouter.getInputStableSwap([stROSE.address,ROSE],[2],ADD_AMOUNT_2,ADD_AMOUNT);
+        expect(amountIn).to.be.closeTo(ADD_AMOUNT_2,ADD_AMOUNT_2.mul(6).div(10000));
 
     })
 
