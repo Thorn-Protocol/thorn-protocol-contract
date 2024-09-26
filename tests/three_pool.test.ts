@@ -5,6 +5,9 @@ import * as dotenv from "dotenv";
 import { StableSwapFactory, StableSwapInfo, StableSwapLP, StableSwapThreePool, StableSwapTwoPoolInfo, Token, StableSwapLPFactory, StableSwapTwoPoolDeployer, StableSwapThreePoolDeployer, StableSwapThreePoolInfo } from "../typechain-types";
 import { BigNumber} from "ethers";
 import { getOption, writeToEnvFile } from "../src/utils/helper";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import path from 'path';
+import fs from 'fs';
 dotenv.config();
 
 describe("StableSwapThreePool Contract Tests", function () {
@@ -32,21 +35,27 @@ describe("StableSwapThreePool Contract Tests", function () {
     const Slippage = BigNumber.from(99); //0.99
     const SlippageMax = BigNumber.from(10100); //1.01
     const Slippage_PRECISION = BigNumber.from(10000);
-    const user1 = process.env.PUBLIC_KEY;
+    let user1: string;
+    let accounts: SignerWithAddress[];
 
     before(async function () {
+        accounts = await ethers.getSigners();
+        user1 = accounts[0].address;
         const LPFactory_CF = await ethers.getContractFactory("StableSwapLPFactory");
-        LPFactory = await upgrades.deployProxy(LPFactory_CF);
+        LPFactory = await LPFactory_CF.deploy() as unknown as StableSwapLPFactory;
+        await LPFactory.deployed();
 
         const swapDeployerCF = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
-        swapDeployer = await upgrades.deployProxy(swapDeployerCF);
+        swapDeployer = await swapDeployerCF.deploy() as unknown as StableSwapTwoPoolDeployer;
+        await swapDeployer.deployed();
         
         const swapTriplePoolDeployerCF = await ethers.getContractFactory("StableSwapThreePoolDeployer");
-        swapTriplePoolDeployer = await upgrades.deployProxy(swapTriplePoolDeployerCF);
+        swapTriplePoolDeployer = await swapTriplePoolDeployerCF.deploy() as unknown as StableSwapThreePoolDeployer;
+        await swapTriplePoolDeployer.deployed();
 
         const {deploy} = deployments;
         const[deployer] = await hre.getUnnamedAccounts();
-        console.log(deployer);
+        
         let tx_stable_swap_factory= await deploy("StableSwapFactory", {
             from: deployer,
             proxy: {
@@ -59,7 +68,7 @@ describe("StableSwapThreePool Contract Tests", function () {
                     args: [LPFactory.address, 
                         swapDeployer.address, 
                         swapTriplePoolDeployer.address,
-                        process.env.PUBLIC_KEY],
+                        user1],
                 },
                 },
                     
@@ -68,11 +77,10 @@ describe("StableSwapThreePool Contract Tests", function () {
             log: true,
             skipIfAlreadyDeployed: false,
         });
-        
-        console.log("hello",tx_stable_swap_factory.address);
-        factory=await ethers.getContractAt("StableSwapFactory",tx_stable_swap_factory.address);
+       
+        factory=await ethers.getContractAt("StableSwapFactory",tx_stable_swap_factory.address) as unknown as StableSwapFactory;
 
-        console.log("factory: ",factory.address);
+
     
         
         let tx1 = await LPFactory.transferOwnership(factory.address);
@@ -82,17 +90,16 @@ describe("StableSwapThreePool Contract Tests", function () {
         let tx3 = await swapTriplePoolDeployer.transferOwnership(factory.address);
         await tx3.wait();
 
-        console.log("done");
-        console.log("two pool deployer owner: ", await swapDeployer.owner());
+
 
         const BUSD_CF = await ethers.getContractFactory("Token");
-        BUSD = await BUSD_CF.deploy("Binance USD", "BUSD", 18);
+        BUSD = await BUSD_CF.deploy("Binance USD", "BUSD", 18) as unknown as Token;
 
         const USDC_CF = await ethers.getContractFactory("Token");
-        USDC = await USDC_CF.deploy("USD Coin", "USDC", 18);
+        USDC = await USDC_CF.deploy("USD Coin", "USDC", 18) as unknown as Token;
 
         const USDT_CF = await ethers.getContractFactory("Token");
-        USDT = await USDT_CF.deploy("Tether USD", "USDT", 18);
+        USDT = await USDT_CF.deploy("Tether USD", "USDT", 18) as unknown as Token;
  
         let tx4 = await BUSD.mint(user1, 1e10);
         await tx4.wait();
@@ -100,28 +107,39 @@ describe("StableSwapThreePool Contract Tests", function () {
         await tx5.wait();
         let tx6 = await USDT.mint(user1, 1e10);
         await tx6.wait();
-        console.log("zêe");
-        let tx = await factory.createThreePoolPair(BUSD.address, USDC.address, USDT.address, A, Fee, AdminFee,await getOption());
-        await tx.wait();
-        console.log("done");
-        let info = await factory.getThreePoolPairInfo(BUSD.address, USDC.address);
-        swap_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool", info.swapContract)
         
-        LP_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapLP", info.LPContract)
-        token0 = await ethers.getContractAt("Token", info.token0);
-        token1 = await ethers.getContractAt("Token", info.token1);
-        token2 = await ethers.getContractAt("Token", info.token2);
+        let tx = await factory.createThreePoolPair(BUSD.address, USDC.address, USDT.address, A, Fee, AdminFee);
+        await tx.wait();
+        
+        let info = await factory.getThreePoolPairInfo(BUSD.address, USDC.address);
+        swap_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapThreePool", info.swapContract) as unknown as StableSwapThreePool;
+        
+        LP_BUSD_USDC_USDT = await ethers.getContractAt("StableSwapLP", info.LPContract) as unknown as StableSwapLP;
+        token0 = await ethers.getContractAt("Token", info.token0) as unknown as Token;
+        token1 = await ethers.getContractAt("Token", info.token1) as unknown as Token;
+        token2 = await ethers.getContractAt("Token", info.token2) as unknown as Token;
 
         const threePoolInfoSC_CF = await ethers.getContractFactory("StableSwapThreePoolInfo");
-        threePoolInfoSC = await threePoolInfoSC_CF.deploy();
+        threePoolInfoSC = await threePoolInfoSC_CF.deploy() as unknown as StableSwapThreePoolInfo;
 
         const twoPoolInfoSC_CF = await ethers.getContractFactory("StableSwapTwoPoolInfo");
-        twoPoolInfoSC = await twoPoolInfoSC_CF.deploy();
+        twoPoolInfoSC = await twoPoolInfoSC_CF.deploy() as unknown as StableSwapTwoPoolInfo;
 
         const poolInfoSC_CF = await ethers.getContractFactory("StableSwapInfo");
-        poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address);
+        poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address) as unknown as StableSwapInfo;
 
     });
+
+    after( () => {
+        const deploymentFolder = path.join(__dirname, '../deployments');
+        if (fs.existsSync(deploymentFolder)) {
+            fs.rmdirSync(deploymentFolder, { recursive: true });
+            console.log('Deployment folder removed.');
+        } else {
+            console.log('Deployment folder does not exist.');
+        }
+        
+      });
 
     it("Check pair info between factory and swap smart contract", async () => {
         let info = await factory.getThreePoolPairInfo(BUSD.address, USDC.address);
@@ -145,22 +163,22 @@ describe("StableSwapThreePool Contract Tests", function () {
         await tx3.wait();
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([0, 1e6, 0], 0,await getOption())
+            swap_BUSD_USDC_USDT.add_liquidity([0, 1e6, 0], 0)
         ).to.be.reverted; //Initial deposit requires all coins
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([1e6, 0, 0], 0,await getOption())
+            swap_BUSD_USDC_USDT.add_liquidity([1e6, 0, 0], 0)
         ).to.be.reverted; //Initial deposit requires all coins
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([0, 0, 1e6], 0,await getOption())
+            swap_BUSD_USDC_USDT.add_liquidity([0, 0, 1e6], 0)
         ).to.be.reverted; //Initial deposit requires all coins
 
         await expect(
-            swap_BUSD_USDC_USDT.add_liquidity([1e6, 1e6, 1e6], 3e7,await getOption()),
+            swap_BUSD_USDC_USDT.add_liquidity([1e6, 1e6, 1e6], 3e7),
         ).to.be.reverted; //Slippage screwed you
         const expect_LP_balance = 3e6;
-        let tx = await swap_BUSD_USDC_USDT.add_liquidity([1e6, 1e6, 1e6], expect_LP_balance, await getOption());
+        let tx = await swap_BUSD_USDC_USDT.add_liquidity([1e6, 1e6, 1e6], expect_LP_balance);
         await tx.wait();
         let LP_balance = await LP_BUSD_USDC_USDT.balanceOf(user1);
         let LP_totalSupply = await LP_BUSD_USDC_USDT.totalSupply();
@@ -187,7 +205,7 @@ describe("StableSwapThreePool Contract Tests", function () {
           0,
           0
         ]);
-        let tx = await swap_BUSD_USDC_USDT.add_liquidity([defaultToken0Amount, 0, 0], expect_LP_balance0, await getOption());
+        let tx = await swap_BUSD_USDC_USDT.add_liquidity([defaultToken0Amount, 0, 0], expect_LP_balance0);
         await tx.wait();
         let token0_balance_after = await swap_BUSD_USDC_USDT.balances(0);
         let token1_balance_after = await swap_BUSD_USDC_USDT.balances(1);
@@ -212,7 +230,7 @@ describe("StableSwapThreePool Contract Tests", function () {
 
         let remove_LP_balance = 1e3;
         let expectCoins = await threePoolInfoSC.calc_coins_amount(swap_BUSD_USDC_USDT.address, remove_LP_balance);
-        let tx = await swap_BUSD_USDC_USDT.remove_liquidity(remove_LP_balance, [0, 0, 0], await getOption());
+        let tx = await swap_BUSD_USDC_USDT.remove_liquidity(remove_LP_balance, [0, 0, 0]);
         await tx.wait();
         let LP_balance_after = await LP_BUSD_USDC_USDT.balanceOf(user1);
         let token0_balance_after = await token0.balanceOf(user1);
@@ -249,7 +267,7 @@ describe("StableSwapThreePool Contract Tests", function () {
         let max_burn_amount = await swap_BUSD_USDC_USDT.calc_token_amount(remove_token_amounts, false);
         let max_burnamount = BigNumber.from(max_burn_amount.toString());
         max_burnamount = max_burnamount.mul(SlippageMax).div(Slippage_PRECISION);
-        let tx =await swap_BUSD_USDC_USDT.remove_liquidity_imbalance(remove_token_amounts, max_burnamount, await getOption());
+        let tx =await swap_BUSD_USDC_USDT.remove_liquidity_imbalance(remove_token_amounts, max_burnamount);
         await tx.wait();
         let user_LP_balance_after = await LP_BUSD_USDC_USDT.balanceOf(user1);
         let LP_totalSupply_after = await LP_BUSD_USDC_USDT.totalSupply();
@@ -311,7 +329,7 @@ describe("StableSwapThreePool Contract Tests", function () {
         let defaultTokenAmount = 1e3;
         let user_token1_balance_before = await token1.balanceOf(user1);
         let expect_Token1_amount = await swap_BUSD_USDC_USDT.calc_withdraw_one_coin(defaultTokenAmount, 1);
-        let tx = await swap_BUSD_USDC_USDT.remove_liquidity_one_coin(defaultTokenAmount, 1, expect_Token1_amount, await getOption());
+        let tx = await swap_BUSD_USDC_USDT.remove_liquidity_one_coin(defaultTokenAmount, 1, expect_Token1_amount);
         await tx.wait();
         let user_token1_balance_after = await token1.balanceOf(user1);
         assert((user_token1_balance_after - user_token1_balance_before).toString(), expect_Token1_amount.toString());
@@ -342,7 +360,7 @@ describe("StableSwapThreePool Contract Tests", function () {
         let swapContract_token1_balance_before = await token1.balanceOf(swap_BUSD_USDC_USDT.address);
         let swap_token1_balance_before = await swap_BUSD_USDC_USDT.balances(1);
         let token1_admin_fee_before = await swap_BUSD_USDC_USDT.admin_balances(1);
-        let tx =await swap_BUSD_USDC_USDT.exchange(0, 1, exchange_token0_balance, expect_token1_balance, await getOption());
+        let tx =await swap_BUSD_USDC_USDT.exchange(0, 1, exchange_token0_balance, expect_token1_balance);
         await tx.wait();
         let user_token0_balance_after = await token0.balanceOf(user1);
         let token1_admin_fee_after = await swap_BUSD_USDC_USDT.admin_balances(1);
@@ -388,7 +406,7 @@ describe("StableSwapThreePool Contract Tests", function () {
         let swapContract_token2_balance_before = await token2.balanceOf(swap_BUSD_USDC_USDT.address);
         let swap_token2_balance_before = await swap_BUSD_USDC_USDT.balances(2);
         let token2_admin_fee_before = await swap_BUSD_USDC_USDT.admin_balances(2);
-        let tx = await swap_BUSD_USDC_USDT.exchange(1, 2, exchange_token1_balance, expect_token2_balance, await getOption());
+        let tx = await swap_BUSD_USDC_USDT.exchange(1, 2, exchange_token1_balance, expect_token2_balance);
         await tx.wait();
         let user_token1_balance_after = await token1.balanceOf(user1);
         let token2_admin_fee_after = await swap_BUSD_USDC_USDT.admin_balances(2);
