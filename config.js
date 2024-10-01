@@ -86,6 +86,11 @@ export const coins = {
       address: "0x391a18914313D4aD51e50dd994CF82c79ec4904f",
       decimals: "18",
     },
+    {
+      symbol: "stROSE",
+      address: "0xEd57966f1566dE1a90042d07403021Ea52ad4724",
+      decimals: "18",
+    },
   ],
 };
 
@@ -102,15 +107,15 @@ export const listAddr = {
     StableSwapRouter: "0x7EbBcae22Edb208fCb9047E557c3958Fdf390D04",
   },
   [NETWORKS.sapphireMainnet.chainId]: {
-    StableSwapInfo: "0x34048af0289C7EEef37277E57C136F4Fb85373CF",
-    StableSwapThreePoolInfo: "0xCFdCb6855dCF1d2094B24A0b061439E9A037FB93",
-    StableSwapTwoPoolInfo: "0xe215D7b62Dc139a3F09b8eA23be12bb32a3a538d",
-    StableSwapLPFactory: "0xE093000349fd504078474F8Cd0d995Bacc59a615",
-    StableSwapTwoPoolDeployer: "0xbA920d999D9Dd6F04690F57D894d3737B394d8B5",
-    StableSwapThreePoolDeployer: "0x510E703B46A52CE73f19fE00E2865a1E156700a4",
-    StableSwapFactory: "0x1B461fAB13bf7f3a723fdCD0Aca1f01538A25Be4",
-    SmartRouterHelperLibrary: "0xC9dD4C4f3a7782718b33a02CfD31D2B93582ECbE",
-    StableSwapRouter: "0x226929476BC3B66dabE174fc644eCd07C53DA484",
+    StableSwapInfo: "0x45Fbc18Fb1234D80d6C8F684237D86515bCf06CD",
+    StableSwapThreePoolInfo: "0xC9389b191bB00379721851Dea327Be163072EaFD",
+    StableSwapTwoPoolInfo: "0x84802a969d7Faa19443E1a3c8b597fE63CdC81b0",
+    StableSwapLPFactory: "0x929b531041296912b4418f0Ce4e82A2d8CBEDC28",
+    StableSwapTwoPoolDeployer: "0x6c55fa71AaAd16aD33915b14F9a960fdfF3bD955",
+    StableSwapThreePoolDeployer: "0xB4665ADc7bdB5026d55eccAe33fCf815AA7706F1",
+    StableSwapFactory: "0xc9A37dF62aFFD760D255F8d2C49aB9217A6A3e5e",
+    SmartRouterHelperLibrary: "0x1503454cEF9ebE983D9357bb83F2E5c362021a92",
+    StableSwapRouter: "0x2CB5aA9dEd179fa431b1dfFe23E1c78502d503B4",
   },
 };
 
@@ -289,10 +294,10 @@ export const poolList = {
       tag: "USD",
       name: "ethUSDT-bscUSDT",
       code: "ethUSDT bscUSDT",
-      address: "0x125c474BA4eD49684c6143c0172a1403f6Ca968B",
+      address: "0xC1B9AB8Ec089bF38b37665C977c3091673da845B",
       lpAddress: {
         symbol: "ethUSDT/bscUSDT",
-        address: "0xF37BfE02e6750Cbc009fc9230bb1b1e588917c22",
+        address: "0xF22196B8F53d1C13668C9F7AF92C5cfDf70b93a4",
         decimals: 18,
       },
       underlyingTokens: [
@@ -315,10 +320,10 @@ export const poolList = {
       tag: "USD",
       name: "ethUSDT-ethUSDC",
       code: "ethUSDT ethUSDC",
-      address: "0x42E4CBF74f655dd3224b3Aa4Fdc8efcD55c96DFA",
+      address: "0x70e90A7631E96C3412dfc6738981D5558537CfBC",
       lpAddress: {
         symbol: "ethUSDT/ethUSDC",
-        address: "0x60c2c212e3F298752e4BdC89ED5546D3A5c1DFfc",
+        address: "0x5B30625ccfF3a269B9B3E33e7476a76Fe49C4DCB",
         decimals: 18,
       },
       underlyingTokens: [
@@ -341,10 +346,10 @@ export const poolList = {
       tag: "ETH",
       name: "ethETH-arbETH",
       code: "ethETH arbETH",
-      address: "0x7ba19d713f02e8967e72e1fCB50794D57398788c",
+      address: "0xC467e9Fa23801Edd21FcA05A024819608fD2fc2e",
       lpAddress: {
         symbol: "ethETH/arbETH",
-        address: "0x0a9AB43EFE1528e11BCf84F45853fb1d9D782656",
+        address: "0xE831c9F5e16d07483a95099f98A90d06F638EAf1",
         decimals: 18,
       },
       underlyingTokens: [
@@ -361,6 +366,32 @@ export const poolList = {
       ],
       fee: 0.0004,
       DAOFee: 0.0002,
+    },
+    {
+      type: 2,
+      tag: "ROSE",
+      name: "ROSE-stROSE",
+      code: "ROSE stROSE",
+      address: "0xb1DE4a3A345d86fE0bBb9bF69b5CaD307072BA8F",
+      lpAddress: {
+        symbol: "ROSE/stROSE",
+        address: "0x3EE13b81fe1f5e8cf949f0909e41c98a6d4b489F",
+        decimals: 18,
+      },
+      underlyingTokens: [
+        {
+          symbol: "stROSE",
+          address: "0xEd57966f1566dE1a90042d07403021Ea52ad4724",
+          decimals: 18,
+        },
+        {
+          symbol: "ROSE",
+          address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+          decimals: 18,
+        },
+      ],
+      fee: 0.0025,
+      DAOFee: 0.0015,
     },
   ],
 };
