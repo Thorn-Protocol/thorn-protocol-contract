@@ -32,16 +32,20 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
 
     before(async function () {
         const LPFactory_CF = await ethers.getContractFactory("StableSwapLPFactory");
-        LPFactory = await upgrades.deployProxy(LPFactory_CF);
+        LPFactory = await LPFactory_CF.deploy() as unknown as StableSwapLPFactory;
+        await LPFactory.deployed();
 
         const swapDeployerCF = await ethers.getContractFactory("StableSwapTwoPoolDeployer");
-        swapDeployer = await upgrades.deployProxy(swapDeployerCF);
+        swapDeployer = await swapDeployerCF.deploy() as unknown as StableSwapTwoPoolDeployer;
+        await swapDeployer.deployed();
         
         const swapTriplePoolDeployerCF = await ethers.getContractFactory("StableSwapThreePoolDeployer");
-        swapTriplePoolDeployer = await upgrades.deployProxy(swapTriplePoolDeployerCF);
+        swapTriplePoolDeployer = await swapTriplePoolDeployerCF.deploy() as unknown as StableSwapThreePoolDeployer;
+        await swapTriplePoolDeployer.deployed();
 
         const factoryCF = await ethers.getContractFactory("StableSwapFactory");
-        factory = await upgrades.deployProxy(factoryCF, [LPFactory.address, swapDeployer.address, swapTriplePoolDeployer.address]);
+        factory = await factoryCF.deploy() as unknown as StableSwapFactory;
+        await factory.deployed();
         
         let tx1 = await LPFactory.transferOwnership(factory.address);
         await tx1.wait();
@@ -51,7 +55,7 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
         await tx3.wait();
 
         const WROSE_CF = await ethers.getContractFactory("Token");
-        WROSE = await WROSE_CF.deploy("Wrapped ROSE", "WROSE", 18);
+        WROSE = await WROSE_CF.deploy("Wrapped ROSE", "WROSE", 18) as unknown as Token;
         writeToEnvFile("WROSE", WROSE.address);
 
  
@@ -61,8 +65,8 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
         let tx = await factory.createSwapPair(WROSE.address, ROSEAddress, A, Fee, AdminFee);
         await tx.wait();
         let info = await factory.getPairInfo(WROSE.address, ROSEAddress);
-        swap_ROSE_WROSE = await ethers.getContractAt("StableSwapTwoPool", info.swapContract)
-        LP_ROSE_WROSE = await ethers.getContractAt("StableSwapLP", info.LPContract)
+        swap_ROSE_WROSE = await ethers.getContractAt("StableSwapTwoPool", info.swapContract) as unknown as StableSwapTwoPool;
+        LP_ROSE_WROSE = await ethers.getContractAt("StableSwapLP", info.LPContract) as unknown as StableSwapLP;
         if (info.token0 == ROSEAddress) {
             ROSE_index = 0;
           } else {
@@ -70,13 +74,13 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
           }
 
         const threePoolInfoSC_CF = await ethers.getContractFactory("StableSwapThreePoolInfo");
-        threePoolInfoSC = await threePoolInfoSC_CF.deploy();
+        threePoolInfoSC = await threePoolInfoSC_CF.deploy() as unknown as StableSwapThreePoolInfo;
 
         const twoPoolInfoSC_CF = await ethers.getContractFactory("StableSwapTwoPoolInfo");
-        twoPoolInfoSC = await twoPoolInfoSC_CF.deploy();
+        twoPoolInfoSC = await twoPoolInfoSC_CF.deploy() as unknown as StableSwapTwoPoolInfo;
 
         const poolInfoSC_CF = await ethers.getContractFactory("StableSwapInfo");
-        poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address);
+        poolInfoSC = await poolInfoSC_CF.deploy(twoPoolInfoSC.address, threePoolInfoSC.address) as unknown as StableSwapInfo;
     });
 
     it("Check pair info between factory and swap smart contract", async () => {
@@ -128,7 +132,7 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
 
           const expect_LP_balance = 2e6;
           const options = await getOption();
-          let tx = await swap_ROSE_WROSE.add_liquidity([1e6, 1e6], expect_LP_balance, {value: 1e6, gasPrice: options.gasPrice, nonce: options.nonce});
+          let tx = await swap_ROSE_WROSE.add_liquidity([1e6, 1e6], expect_LP_balance, {value: 1e6, gasPrice: options.gasPrice});
           await tx.wait();
           let LP_balance = await LP_ROSE_WROSE.balanceOf(user1);
           let LP_totalSupply = await LP_ROSE_WROSE.totalSupply();
@@ -147,10 +151,10 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
         let liquidityAdminFee = await twoPoolInfoSC.get_add_liquidity_fee(swap_ROSE_WROSE.address, [defaultToken0Amount,0]);
         const options = await getOption();
         if (ROSE_index == 0) {
-          let tx = await swap_ROSE_WROSE.add_liquidity([defaultToken0Amount, 0], expect_LP_balance0, {value: 1e3, gasPrice: options.gasPrice, nonce: options.nonce});
+          let tx = await swap_ROSE_WROSE.add_liquidity([defaultToken0Amount, 0], expect_LP_balance0, {value: 1e3, gasPrice: options.gasPrice});
           await tx.wait();
         } else {
-          let tx = await swap_ROSE_WROSE.add_liquidity([defaultToken0Amount, 0], expect_LP_balance0, {value: 0, gasPrice: options.gasPrice, nonce: options.nonce});
+          let tx = await swap_ROSE_WROSE.add_liquidity([defaultToken0Amount, 0], expect_LP_balance0, {value: 0, gasPrice: options.gasPrice});
           await tx.wait();
         }
         let token0_balance_after = await swap_ROSE_WROSE.balances(0);
@@ -406,9 +410,9 @@ describe("StableSwapTwoPool Contract Tests with ROSE", function () {
         let tx;
         const options = await getOption();
         if (ROSE_index == 0) {
-          tx = await swap_ROSE_WROSE.exchange(0, 1, exchange_ROSE_balance, expect_wROSE_balance, {value: exchange_ROSE_balance, gasPrice: options.gasPrice, nonce: options.nonce});
+          tx = await swap_ROSE_WROSE.exchange(0, 1, exchange_ROSE_balance, expect_wROSE_balance, {value: exchange_ROSE_balance, gasPrice: options.gasPrice});
         } else {
-          tx = await swap_ROSE_WROSE.exchange(1, 0, exchange_ROSE_balance, expect_wROSE_balance, {value: exchange_ROSE_balance, gasPrice: options.gasPrice, nonce: options.nonce});
+          tx = await swap_ROSE_WROSE.exchange(1, 0, exchange_ROSE_balance, expect_wROSE_balance, {value: exchange_ROSE_balance, gasPrice: options.gasPrice});
         }
         const receipt = await tx.wait();
         let gasUsed = BigNumber.from(receipt.gasUsed).mul(tx.gasPrice);
