@@ -32,6 +32,7 @@
     "@chainlink/contracts": "^0.6.1",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@oasisprotocol/sapphire-hardhat": "^2.19.4",
     "@openzeppelin/contract-loader": "^0.6.3",
     "@openzeppelin/contracts": "^4.6.0",
     "@openzeppelin/contracts-upgradeable": "^4.7.3",

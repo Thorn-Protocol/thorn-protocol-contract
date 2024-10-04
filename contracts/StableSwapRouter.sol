@@ -17,18 +17,13 @@ import "hardhat/console.sol";
 ///         It allows users to swap stable coins efficiently
 /// @dev    This contract manages stable swap functionality, including executing swaps and caculating swap amounts
 
-contract StableSwapRouter is
-    IStableSwapRouter,
-    Ownable,
-    ReentrancyGuard
-{
+contract StableSwapRouter is IStableSwapRouter, Ownable, ReentrancyGuard {
     address public WROSE;
-   
 
     address public stableSwapFactory;
     address public stableSwapInfo;
 
-    address public constant ROSE=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address public constant ROSE = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     bool public isKill;
 
     /*╔══════════════════════════════╗
@@ -52,14 +47,10 @@ contract StableSwapRouter is
       ║          CONSTRUCTOR         ║
       ╚══════════════════════════════╝*/
 
-    constructor(
-        address _stableSwapFactory,
-        address _stableSwapInfo
-    ){
+    constructor(address _stableSwapFactory, address _stableSwapInfo) {
         stableSwapFactory = _stableSwapFactory;
         stableSwapInfo = _stableSwapInfo;
-        isKill=false;
-
+        isKill = false;
     }
 
     /*╔══════════════════════════════╗
@@ -92,15 +83,21 @@ contract StableSwapRouter is
                 .getStableInfo(stableSwapFactory, input, output, flag[i]);
             if (input == ROSE) {
                 amountIn_ = address(this).balance;
-                IStableSwap(swapContract).exchange{value: amountIn_}(k, j, amountIn_, 0);
+                IStableSwap(swapContract).exchange{value: amountIn_}(
+                    k,
+                    j,
+                    amountIn_,
+                    0
+                );
             }
             if (input != ROSE) {
                 amountIn_ = IERC20(input).balanceOf(address(this));
                 TransferHelper.safeApprove(input, swapContract, amountIn_);
-                 IStableSwap(swapContract).exchange(k, j, amountIn_, 0);
+                IStableSwap(swapContract).exchange(k, j, amountIn_, 0);
             }
         }
     }
+
     /**
      * @param path Array of token addresses in a stable swap pool.
      * @param flag Flag indicating the pool type. Use '2' for a 2-pool, '3' for a 3-pool.
@@ -116,25 +113,25 @@ contract StableSwapRouter is
         address to
     ) external payable nonReentrant returns (uint256 amountOut) {
         require(!isKill, "Contract is killed");
-        address srcToken=  path[0];
+        address srcToken = path[0];
         address dstToken = path[path.length - 1];
-        
+
         // use amountIn == Constants.CONTRACT_BALANCE as a flag to swap the entire balance of the contract
-        
+
         bool hasAlreadyPaid;
         if (amountIn == Constants.CONTRACT_BALANCE) {
             hasAlreadyPaid = true;
-            if(srcToken==ROSE){
+            if (srcToken == ROSE) {
                 amountIn = address(this).balance;
-            }else{
+            } else {
                 amountIn = IERC20(srcToken).balanceOf(address(this));
             }
         }
 
         if (!hasAlreadyPaid) {
-            if(srcToken==ROSE){
-                require(msg.value>=amountIn, "Invalid msg.value");
-            }else{
+            if (srcToken == ROSE) {
+                require(msg.value >= amountIn, "Invalid msg.value");
+            } else {
                 pay(srcToken, msg.sender, address(this), amountIn);
             }
         }
@@ -152,12 +149,18 @@ contract StableSwapRouter is
         if (to == Constants.MSG_SENDER) to = msg.sender;
         else if (to == Constants.ADDRESS_THIS) to = address(this);
 
-        if (to != address(this)){
+        if (to != address(this)) {
             pay(dstToken, address(this), to, amountOut);
         }
-            
 
-        emit StableExchange(msg.sender,amountIn,path[0],amountOut,path[path.length - 1], to);
+        emit StableExchange(
+            msg.sender,
+            amountIn,
+            path[0],
+            amountOut,
+            path[path.length - 1],
+            to
+        );
     }
 
     /**
@@ -227,9 +230,7 @@ contract StableSwapRouter is
         uint256 value
     ) internal {
         if (payer == address(this)) {
-            
             if (token == ROSE) {
-                
                 TransferHelper.safeTransferROSE(recipient, value);
             } else {
                 TransferHelper.safeTransfer(token, recipient, value);
@@ -242,9 +243,8 @@ contract StableSwapRouter is
     function kill() external onlyOwner {
         isKill = true;
     }
+
     function unKill() external onlyOwner {
         isKill = false;
     }
-
-
 }
