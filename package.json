@@ -26,7 +26,7 @@
         "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
         "@oasisprotocol/sapphire-contracts": "^0.2.10",
         "@openzeppelin/contracts": "^4.6.0",
-        "@openzeppelin/contracts-upgradeable": "^5.0.2",
+        "@openzeppelin/contracts-upgradeable": "^4.6.0",
         "@typechain/hardhat": "^9.1.0",
         "@types/chai": "^4.3.16",
         "@types/mocha": "^10.0.7",

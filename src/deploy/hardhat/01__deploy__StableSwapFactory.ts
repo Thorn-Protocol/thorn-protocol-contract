@@ -4,7 +4,7 @@ import { CHAIN_ID } from "../../utils/network";
 
 const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts, getChainId } = hre;
-    const { deploy, get } = deployments;
+    const { deploy, get, read, execute } = deployments;
     const { deployer } = await getNamedAccounts();
 
     const lp_factory = await get("StableSwapLPFactory");
@@ -12,7 +12,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const three_pool_deployer = await get("StableSwapThreePoolDeployer");
 
     if ((await getChainId()) === CHAIN_ID.HARDHAT) {
-        await deploy("StableSwapFactory", {
+        const receipt = await deploy("StableSwapFactory", {
             from: deployer,
             args: [],
             log: true,
@@ -27,6 +27,13 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 },
             },
         });
+
+        await execute("StableSwapTwoPoolDeployer", { from: deployer, log: true }, "transferOwnership", receipt.address);
+
+        await execute("StableSwapLPFactory", { from: deployer, log: true }, "transferOwnership", receipt.address);
+
+        const admin = await read("StableSwapFactory", "admin");
+        console.log("Admin:", admin);
     }
 };
 deploy.tags = ["two-pool-deployer"];
