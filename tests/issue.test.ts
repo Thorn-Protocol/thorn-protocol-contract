@@ -6,8 +6,14 @@ import {
     StableSwapLP__factory,
     StableSwapLPFactory,
     StableSwapLPFactory__factory,
+    StableSwapThreePool,
+    StableSwapThreePool__factory,
     StableSwapTwoPool,
     StableSwapTwoPool__factory,
+    TKN1,
+    TKN1__factory,
+    TKN2,
+    TKN3,
     USDC,
     USDC__factory,
     USDT,
@@ -28,8 +34,15 @@ describe("issue test", () => {
     let alice: HardhatEthersSigner;
 
     let pool: StableSwapTwoPool;
+
+    let pool3: StableSwapThreePool;
+
     let usdc: USDC;
     let usdt: USDT;
+
+    let tkn1: TKN1;
+    let tkn2: TKN2;
+    let tkn3: TKN3;
 
     let lp: StableSwapLP;
 
@@ -53,8 +66,20 @@ describe("issue test", () => {
         const usdtDeployment = await get("USDT");
         usdt = USDC__factory.connect(usdtDeployment.address, provider);
 
+        const tkn1Deployment = await get("TKN1");
+        tkn1 = TKN1__factory.connect(tkn1Deployment.address, provider);
+
+        const tkn2Deployment = await get("TKN2");
+        tkn2 = TKN1__factory.connect(tkn2Deployment.address, provider);
+
+        const tkn3Deployment = await get("TKN3");
+        tkn3 = TKN1__factory.connect(tkn3Deployment.address, provider);
+
         const poolDeployment = await get("Pool_USDT_USDC");
         pool = StableSwapTwoPool__factory.connect(poolDeployment.address, provider);
+
+        const pool3Deployment = await get("Pool3");
+        pool3 = StableSwapThreePool__factory.connect(pool3Deployment.address, provider);
 
         const lpDeployment = await pool.token();
         lp = StableSwapLP__factory.connect(lpDeployment, provider);
@@ -108,5 +133,29 @@ describe("issue test", () => {
 
         console.log("usdc receive ", formatUnits(usdc_bob_after - usdc_bob_before, 6));
         console.log("usdt receive ", formatUnits(usdt_bob_after - usdt_bob_before, 6));
+    });
+
+    it("issue#65", async () => {
+        await tkn1.connect(alice).mint(await alice.getAddress(), parseUnits("100", 18));
+        await tkn2.connect(alice).mint(await alice.getAddress(), parseUnits("100", 18));
+        await tkn3.connect(alice).mint(await alice.getAddress(), parseUnits("100", 18));
+        await tkn1.connect(alice).approve(await pool3.getAddress(), parseUnits("100", 18));
+        await tkn2.connect(alice).approve(await pool3.getAddress(), parseUnits("100", 18));
+        await tkn3.connect(alice).approve(await pool3.getAddress(), parseUnits("100", 18));
+        await pool3
+            .connect(alice)
+            .add_liquidity([parseUnits("100", 18), parseUnits("100", 18), parseUnits("100", 18)], 0);
+        let failedWithdrawals = 0;
+        let successfulWithdrawals = 0;
+        for (let i = 0; i < 100; i++) {
+            try {
+                await pool3.connect(alice).remove_liquidity_one_coin(1, 0, 0);
+                successfulWithdrawals++;
+            } catch (e) {
+                failedWithdrawals++;
+            }
+        }
+        console.log("successfulWithdrawals", successfulWithdrawals);
+        console.log("failedWithdrawals", failedWithdrawals);
     });
 });

@@ -24,7 +24,7 @@ const config: HardhatUserConfig = {
         cache: "cache",
         deploy: "src/deploy",
         sources: "contracts",
-        tests: "test",
+        tests: "tests",
     },
     namedAccounts: {
         deployer: 0,

@@ -30,6 +30,13 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         await execute("StableSwapTwoPoolDeployer", { from: deployer, log: true }, "transferOwnership", receipt.address);
 
+        await execute(
+            "StableSwapThreePoolDeployer",
+            { from: deployer, log: true },
+            "transferOwnership",
+            receipt.address
+        );
+
         await execute("StableSwapLPFactory", { from: deployer, log: true }, "transferOwnership", receipt.address);
 
         const admin = await read("StableSwapFactory", "admin");
