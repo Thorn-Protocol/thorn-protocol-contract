@@ -275,15 +275,15 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
             // Equality with the precision of 1
             if (D > Dprev) {
                 if (D - Dprev <= 1) {
-                    break;
+                    return D;
                 }
             } else {
                 if (Dprev - D <= 1) {
-                    break;
+                    return D;
                 }
             }
         }
-        return D;
+        revert("invariant calculation did not converge");
     }
 
     /**
