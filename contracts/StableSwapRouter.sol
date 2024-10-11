@@ -130,7 +130,7 @@ contract StableSwapRouter is IStableSwapRouter, Ownable, ReentrancyGuard {
 
         if (!hasAlreadyPaid) {
             if (srcToken == ROSE) {
-                require(msg.value >= amountIn, "Invalid msg.value");
+                require(msg.value == amountIn, "Invalid msg.value");
             } else {
                 pay(srcToken, msg.sender, address(this), amountIn);
             }
