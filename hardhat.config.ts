@@ -16,7 +16,7 @@ const TEST_HDWALLET = {
     passphrase: "",
 };
 
-const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY, process.env.SUB_PRIVATE_KEY!] : TEST_HDWALLET;
+const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : TEST_HDWALLET;
 
 const config: HardhatUserConfig = {
     paths: {
