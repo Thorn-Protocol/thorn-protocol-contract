@@ -13,15 +13,15 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // const Fee = 4000000;
     // const AdminFee = 5000000000;
 
-    const A = 100;
-    const Fee = 4_000_000;
-    const AdminFee = 5_000_000_000;
-
-    const TKN1 = await get("TKN1");
-    const TKN2 = await get("TKN2");
-    const TKN3 = await get("TKN3");
-
     if ((await getChainId()) === CHAIN_ID.HARDHAT) {
+        const A = 100;
+        const Fee = 4_000_000;
+        const AdminFee = 5_000_000_000;
+
+        const TKN1 = await get("TKN1");
+        const TKN2 = await get("TKN2");
+        const TKN3 = await get("TKN3");
+
         const receipt = await execute(
             "StableSwapFactory",
             { from: deployer, log: true },

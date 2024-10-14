@@ -7,13 +7,12 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deploy, get } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    const helper = await get("SmartRouterHelper");
-
-    const stable_swap_factory = await get("StableSwapFactory");
-
-    const stable_swap_info = await get("StableSwapInfo");
-
     if ((await getChainId()) === CHAIN_ID.HARDHAT) {
+        const helper = await get("SmartRouterHelper");
+
+        const stable_swap_factory = await get("StableSwapFactory");
+
+        const stable_swap_info = await get("StableSwapInfo");
         await deploy("StableSwapRouter", {
             from: deployer,
             args: [stable_swap_factory.address, stable_swap_info.address],

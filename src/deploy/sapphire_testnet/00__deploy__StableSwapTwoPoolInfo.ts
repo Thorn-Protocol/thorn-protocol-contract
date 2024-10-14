@@ -7,11 +7,12 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    if ((await getChainId()) === CHAIN_ID.HARDHAT) {
+    if ((await getChainId()) === CHAIN_ID.OASIS_SAPPHIRE_TESTNET) {
         await deploy("StableSwapTwoPoolInfo", {
             from: deployer,
             args: [],
             log: true,
+            skipIfAlreadyDeployed: true,
             autoMine: true,
         });
     }

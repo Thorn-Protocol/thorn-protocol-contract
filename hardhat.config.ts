@@ -59,26 +59,19 @@ const config: HardhatUserConfig = {
             initialBaseFeePerGas: 100e9,
             saveDeployments: true,
         },
-        "sapphire-mainnet": {
+        sapphire_mainnet: {
             url: "https://sapphire.oasis.io",
             chainId: 0x5afe,
             accounts,
             live: true,
             tags: ["sapphire-mainnet"],
         },
-        "sapphire-testnet": {
-            url: "https://testnet.sapphire.oasis.dev",
+        sapphire_testnet: {
+            url: "https://testnet.sapphire.oasis.io",
             chainId: 0x5aff,
             accounts,
             live: true,
             tags: ["sapphire-testnet"],
-        },
-        "bsc-testnet": {
-            url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
-            accounts,
-            live: true,
-            chainId: 97,
-            tags: ["bsc-testnet"],
         },
     },
 };

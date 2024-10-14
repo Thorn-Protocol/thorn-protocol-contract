@@ -27,6 +27,7 @@
         "@oasisprotocol/sapphire-contracts": "^0.2.10",
         "@openzeppelin/contracts": "^4.6.0",
         "@openzeppelin/contracts-upgradeable": "^4.6.0",
+        "@safe-global/protocol-kit": "^5.0.1",
         "@typechain/hardhat": "^9.1.0",
         "@types/chai": "^4.3.16",
         "@types/mocha": "^10.0.7",

@@ -9,14 +9,13 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deploy, get, execute, read, save } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    const A = 1000;
-    const Fee = 4000000;
-    const AdminFee = 5000000000;
-
-    const USDT = await get("USDT");
-    const USDC = await get("USDC");
-
     if ((await getChainId()) === CHAIN_ID.HARDHAT) {
+        const A = 1000;
+        const Fee = 4000000;
+        const AdminFee = 5000000000;
+
+        const USDT = await get("USDT");
+        const USDC = await get("USDC");
         const receipt = await execute(
             "StableSwapFactory",
             { from: deployer, log: true },

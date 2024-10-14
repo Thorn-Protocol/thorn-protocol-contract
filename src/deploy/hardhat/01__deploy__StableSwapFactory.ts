@@ -7,11 +7,11 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deploy, get, read, execute } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    const lp_factory = await get("StableSwapLPFactory");
-    const two_pool_deployer = await get("StableSwapTwoPoolDeployer");
-    const three_pool_deployer = await get("StableSwapThreePoolDeployer");
-
     if ((await getChainId()) === CHAIN_ID.HARDHAT) {
+        const lp_factory = await get("StableSwapLPFactory");
+        const two_pool_deployer = await get("StableSwapTwoPoolDeployer");
+        const three_pool_deployer = await get("StableSwapThreePoolDeployer");
+
         const receipt = await deploy("StableSwapFactory", {
             from: deployer,
             args: [],
