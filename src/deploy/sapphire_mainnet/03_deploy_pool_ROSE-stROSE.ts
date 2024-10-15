@@ -11,14 +11,14 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deploy, get, getOrNull, execute, read, save } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    if ((await getChainId()) === CHAIN_ID.OASIS_SAPPHIRE_TESTNET) {
+    if ((await getChainId()) === CHAIN_ID.OASIS_SAPPHIRE_MAINNET) {
         const factoryDeploy = await get("StableSwapFactory");
         const stable_swap_factory = await get("StableSwapFactory");
         const stable_swap_info = await get("StableSwapInfo");
 
         if ((await getOrNull("pool_ROSE-stROSE")) == null) {
-            // console.log(" Deploying pool ROSE-stROSE");
             const info_pool = await read("StableSwapFactory", "getPairInfo", TOKEN_TESTNET.ROSE, TOKEN_TESTNET.stROSE);
+
             if (info_pool["swapContract"] == ZeroAddress) {
                 console.log("Deploying pool ROSE-stROSE");
                 const factory = StableSwapFactory__factory.connect(factoryDeploy.address, hre.ethers.provider);
