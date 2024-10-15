@@ -410,7 +410,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
                 }
             }
         }
-        revert("Max iterations reached");
+        revert("does not converge");
     }
 
     /**
