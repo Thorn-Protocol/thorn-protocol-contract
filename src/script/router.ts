@@ -1,6 +1,7 @@
 import hre from "hardhat";
 import { StableSwapFactory__factory } from "../../typechain-types";
 import { TOKEN_TESTNET } from "../config";
+import { parseEther } from "ethers";
 
 async function router() {
     const { deployments, getNamedAccounts, getChainId } = hre;

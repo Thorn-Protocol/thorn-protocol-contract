@@ -30,14 +30,14 @@ async function pool() {
 
     console.log("balanceLP", balanceLP.toString());
 
-    // if (balance > parseEther("1")) {
-    //     await stROSE.connect(deployer2).approve(poolAddress, parseEther("1"));
-    //     console.log(" add_liquidity ");
-    //     txRespone = await pool
-    //         .connect(deployer2)
-    //         .add_liquidity([parseEther("1"), parseEther("1")], 0, { value: parseEther("1") });
-    //     await txRespone.wait();
-    // }
+    if (balance > parseEther("1")) {
+        await stROSE.connect(deployer2).approve(poolAddress, parseEther("1"));
+        console.log(" add_liquidity ");
+        txRespone = await pool
+            .connect(deployer2)
+            .add_liquidity([parseEther("1"), parseEther("1")], 0, { value: parseEther("1") });
+        await txRespone.wait();
+    }
 }
 
 pool();
