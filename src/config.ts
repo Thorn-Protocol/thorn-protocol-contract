@@ -8,6 +8,8 @@ export const TOKEN_TESTNET = {
     stROSE: "0xf001eb69fd0b4060db7397d70ec2edcd5d89cb27",
 };
 
-export const SAFE_WALLET_TESTNET = {
-    address: "0x29f1F28B304572D996B9fE24DFFc2fF5e5C65C4e",
+export const TOKEN_MAINNET = {
+    ROSE: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+
+    stROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // https://accumulated.finance/stake/rose
 };

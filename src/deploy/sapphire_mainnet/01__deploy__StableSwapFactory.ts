@@ -54,13 +54,13 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 "StableSwapFactory",
                 { from: deployer, log: true },
                 "transferOwnership",
-                ADMIN_WALLET.SAPPHIRE_TESTNET
+                ADMIN_WALLET.SAPPHIRE_MAINNET
             );
             await execute(
                 "StableSwapFactory",
                 { from: deployer, log: true },
                 "transferAdminship",
-                ADMIN_WALLET.SAPPHIRE_TESTNET
+                ADMIN_WALLET.SAPPHIRE_MAINNET
             );
         } else {
         }

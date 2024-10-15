@@ -1,31 +1,44 @@
-import { ethers,deployments} from "hardhat";
-import * as hre from "hardhat";
+import { CHAIN_ID } from "./../src/utils/network";
 import * as dotenv from "dotenv";
-import { ERC20, StableSwapFactory, StableSwapInfo, StableSwapLPFactory, StableSwapRouter, StableSwapThreePool, StableSwapThreePoolDeployer, StableSwapThreePoolInfo, StableSwapTwoPoolDeployer, StableSwapTwoPoolInfo, Token } from "../typechain-types";
-import { StableSwapTwoPool } from '../typechain-types/contracts/stableSwap/plain-pools/StableSwapTwoPool';
-import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-
+import { deployments, ethers, network } from "hardhat";
+import {
+    StableSwapFactory,
+    StableSwapFactory__factory,
+    StableSwapLPFactory,
+    StableSwapLPFactory__factory,
+} from "../typechain-types";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import hre from "hardhat";
 dotenv.config();
 describe("test router", function () {
-   
+    if (network.config.chainId != 31337) {
+        throw new Error("Test must be run on localhost");
+    }
+
+    let lpFactory: StableSwapLPFactory;
+    let stableSwapFactory: StableSwapFactory;
+    let deployer: HardhatEthersSigner;
+    let bob: HardhatEthersSigner;
+    let alice: HardhatEthersSigner;
+
+    const A = 1000;
+    const Fee = 4000000;
+    const AdminFee = 5000000000;
+
+    const { deployments, getNamedAccounts } = hre;
+    const { get, execute, read } = deployments;
+    const provider = ethers.provider;
+
     before(async () => {
-      
-    })
+        deployments.fixture();
+        deployer = await hre.ethers.provider.getSigner(0);
+        bob = await hre.ethers.provider.getSigner(1);
+        alice = await hre.ethers.provider.getSigner(2);
+        const lpFactoryDeployment = await get("StableSwapLPFactory");
+        const stableSwapFactoryDeployment = await get("StableSwapFactory");
+        lpFactory = StableSwapLPFactory__factory.connect(lpFactoryDeployment.address, provider);
+        stableSwapFactory = StableSwapFactory__factory.connect(stableSwapFactoryDeployment.address, provider);
+    });
 
-    
-    it("exac input swap: swap 1000 BUSD-> USDC on two pool", async () => {
-    })
-
-    it("exac input swap 1000 BUSD->USDC in two pool and swap USDC amount-> USDT in three pool", async () => {
- })
-
-    it("get BUSD to  be needed to get 100000 USDC when you swap BUSD ->USDC in 2 pool ", async () => {
-
-    })
-
-    it("get BUSD to  be needed to get 100000 USDT when you swap BUSD ->USDC in 2 pool  and USDC->USDT in 3 pool", async () => {
-  })
-
-    it("get output if swap 100000n BUSD->USDC in two pool and swap USDC amount-> USDT in three pool ", async () => {
-    })
-})
+    it("call getAmountOut when non have liquidity", async () => {});
+});
