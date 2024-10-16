@@ -459,16 +459,15 @@ contract StableSwapTwoPoolInfo {
             // Equality with the precision of 1
             if (y > y_prev) {
                 if (y - y_prev <= 1) {
-                    break;
+                    return y;
                 }
             } else {
                 if (y_prev - y <= 1) {
-                    break;
+                    return y;
                 }
             }
         }
         revert("does not converge");
-        //return y;
     }
 
     /**
