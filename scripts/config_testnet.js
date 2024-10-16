@@ -45,8 +45,8 @@ export const poolList = {
                     decimals: 18,
                 },
             ],
-            fee: 0.04,
-            DAOFee: 0.002,
+            fee: 0.0004,
+            DAOFee: 0.0002,
         },
     ],
 };

@@ -63,6 +63,10 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 ADMIN_WALLET.SAPPHIRE_MAINNET
             );
         } else {
+            const admin = await read("StableSwapFactory", "admin");
+            console.log("Admin:", admin);
+            const owner = await read("StableSwapFactory", "owner");
+            console.log("Owner:", owner);
         }
     }
 };

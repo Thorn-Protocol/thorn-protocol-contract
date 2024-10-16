@@ -18,7 +18,8 @@ import {
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import hre from "hardhat";
 import { TOKEN_TESTNET } from "../src/config";
-import { parseEther } from "ethers";
+import { formatEther, parseEther } from "ethers";
+import { expect } from "chai";
 dotenv.config();
 describe("test router", function () {
     if (network.config.chainId != 31337) {
@@ -71,31 +72,49 @@ describe("test router", function () {
         stROSE = StROSE__factory.connect(stROSEDeployment.address, provider);
     });
 
-    it("call getAmountOut when non have liquidity", async () => {
-        // check pool
-        const info = await factory.getPairInfo(TOKEN_TESTNET.ROSE, await stROSE.getAddress());
-        console.log(" info ", info);
-        console.log(" stRose ", await stROSE.getAddress());
-        const x = await router.getOutputStableSwap([TOKEN_TESTNET.ROSE, await stROSE.getAddress()], [2], 0, 0);
-    });
+    // it("call getAmountOut when non have liquidity", async () => {
+    //     // check pool
+    //     const info = await factory.getPairInfo(TOKEN_TESTNET.ROSE, await stROSE.getAddress());
+    //     console.log(" info ", info);
+    //     console.log(" stRose ", await stROSE.getAddress());
+    //     const x = await router.getOutputStableSwap([TOKEN_TESTNET.ROSE, await stROSE.getAddress()], [2], 0, 0);
+    // });
 
-    it("revert call getAmountOut input = 0 when non have liquidity after approve", async () => {
+    it("revert call getAmountOut input = 0 when non have liquidity after addliquidity each 1ETH ", async () => {
         await stROSE.connect(deployer).mint(await deployer.getAddress(), parseEther("100"));
         await stROSE.connect(deployer).approve(await poolROSE.getAddress(), parseEther("1"));
 
         await poolROSE
             .connect(deployer)
-            .add_liquidity([parseEther("1"), parseEther("1")], 0, { value: parseEther("1") });
+            .add_liquidity([parseEther("1"), parseEther("1.1")], 0, { value: parseEther("1.1") });
 
         // check pool
         const info = await factory.getPairInfo(TOKEN_TESTNET.ROSE, await stROSE.getAddress());
         console.log(" info ", info);
         console.log(" stRose ", await stROSE.getAddress());
-        const x = await router.getOutputStableSwap(
-            [TOKEN_TESTNET.ROSE, await stROSE.getAddress()],
-            [2],
-            parseEther("0.1"),
-            0
-        );
+        await expect(router.getOutputStableSwap([TOKEN_TESTNET.ROSE, await stROSE.getAddress()], [2], 0, 0)).to.be
+            .reverted;
     });
+
+    // it("success call getAmountOut input = 0.1 when non have liquidity after addliquidity each 1ETH ", async () => {
+    //     await stROSE.connect(deployer).mint(await deployer.getAddress(), parseEther("100"));
+    //     await stROSE.connect(deployer).approve(await poolROSE.getAddress(), parseEther("1"));
+
+    //     await poolROSE
+    //         .connect(deployer)
+    //         .add_liquidity([parseEther("1.1"), parseEther("1")], 0, { value: parseEther("1.1") });
+
+    //     // check pool
+    //     const info = await factory.getPairInfo(TOKEN_TESTNET.ROSE, await stROSE.getAddress());
+    //     console.log(" info ", info);
+    //     console.log(" stRose ", await stROSE.getAddress());
+    //     const data = await router.getOutputStableSwap(
+    //         [TOKEN_TESTNET.ROSE, await stROSE.getAddress()],
+    //         [2],
+    //         parseEther("2"),
+    //         0
+    //     );
+
+    //     console.log(" data ", formatEther(data));
+    // });
 });

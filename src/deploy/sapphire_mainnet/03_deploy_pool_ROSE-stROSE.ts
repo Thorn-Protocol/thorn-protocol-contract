@@ -27,8 +27,8 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 const AdminFee = 5000000000;
 
                 const tx_non_signed = await factory.createSwapPair.populateTransaction(
-                    TOKEN_TESTNET.ROSE,
-                    TOKEN_TESTNET.stROSE,
+                    TOKEN_MAINNET.ROSE,
+                    TOKEN_MAINNET.stROSE,
                     A,
                     Fee,
                     AdminFee
@@ -46,6 +46,8 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             }
         } else {
             console.log("Pool ROSE-stROSE already deployed at:", (await get("pool_ROSE-stROSE")).address);
+            const info_pool = await read("StableSwapFactory", "getPairInfo", TOKEN_MAINNET.ROSE, TOKEN_MAINNET.stROSE);
+            console.log("info_pool", info_pool);
         }
     }
 };

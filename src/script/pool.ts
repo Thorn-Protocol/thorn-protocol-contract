@@ -2,7 +2,26 @@ import hre from "hardhat";
 import { ERC20__factory, StableSwapFactory__factory, StableSwapTwoPool__factory } from "../../typechain-types";
 import { TOKEN_TESTNET } from "../config";
 import { plainPools } from "../../typechain-types/contracts/stableSwap";
-import { parseEther } from "ethers";
+import { formatEther, parseEther } from "ethers";
+
+async function info(addressERC20: string, pool: string) {
+    if (addressERC20 == TOKEN_TESTNET.ROSE) {
+        const provider = hre.ethers.provider;
+
+        console.log("symbol: ", "ROSE");
+
+        const balance_pool = await provider.getBalance(pool);
+        console.log("balance_pool", formatEther(balance_pool));
+        return;
+    }
+    const token = ERC20__factory.connect(addressERC20, hre.ethers.provider);
+
+    const symbol = await token.symbol();
+    const balance_pool = await token.balanceOf(pool);
+
+    console.log("symbol", symbol);
+    console.log("balance_pool", formatEther(balance_pool));
+}
 
 async function pool() {
     const { deployments, getNamedAccounts, getChainId } = hre;
@@ -15,29 +34,21 @@ async function pool() {
     const stROSE = ERC20__factory.connect(TOKEN_TESTNET.stROSE, hre.ethers.provider);
 
     const poolAddress = (await get("pool_ROSE-stROSE")).address;
-
     const pool = StableSwapTwoPool__factory.connect(poolAddress, hre.ethers.provider);
-
     const balance = await stROSE.balanceOf(deployer);
-
     let txRespone, txReceipt;
-
     const tokenLPAddress = await pool.token();
-
     const tokenLP = ERC20__factory.connect(tokenLPAddress, hre.ethers.provider);
-
     const balanceLP = await tokenLP.balanceOf(deployer);
-
     console.log("balanceLP", balanceLP.toString());
 
-    if (balance > parseEther("1")) {
-        await stROSE.connect(deployer2).approve(poolAddress, parseEther("1"));
-        console.log(" add_liquidity ");
-        txRespone = await pool
-            .connect(deployer2)
-            .add_liquidity([parseEther("1"), parseEther("1")], 0, { value: parseEther("1") });
-        await txRespone.wait();
-    }
+    const token1Address = await pool.coins(0);
+    const token2Address = await pool.coins(1);
+
+    console.log("token1Address", token1Address);
+    console.log("token2Address", token2Address);
+    await info(token1Address, poolAddress);
+    await info(token2Address, poolAddress);
 }
 
 pool();

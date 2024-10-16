@@ -1,6 +1,6 @@
 import hre from "hardhat";
 import { StableSwapFactory__factory } from "../../typechain-types";
-import { TOKEN_TESTNET } from "../config";
+import { TOKEN_MAINNET, TOKEN_TESTNET } from "../config";
 import { parseEther } from "ethers";
 
 async function router() {
@@ -14,7 +14,7 @@ async function router() {
 
     const factory = StableSwapFactory__factory.connect(factoryAddress, hre.ethers.provider);
 
-    const info = await factory.getPairInfo(TOKEN_TESTNET.stROSE, TOKEN_TESTNET.ROSE);
+    const info = await factory.getPairInfo(TOKEN_MAINNET.stROSE, TOKEN_MAINNET.ROSE);
 
     console.log(info);
 
@@ -22,8 +22,8 @@ async function router() {
         "SmartRouterHelper",
         "getStableInfo",
         factoryAddress,
-        TOKEN_TESTNET.ROSE,
-        TOKEN_TESTNET.stROSE,
+        TOKEN_MAINNET.ROSE,
+        TOKEN_MAINNET.stROSE,
         2
     );
 
@@ -32,9 +32,9 @@ async function router() {
     const data2 = await read(
         "StableSwapRouter",
         "getOutputStableSwap",
-        [TOKEN_TESTNET.stROSE, TOKEN_TESTNET.ROSE],
+        [TOKEN_MAINNET.stROSE, TOKEN_MAINNET.ROSE],
         [2n],
-        0n,
+        parseEther("0.1"),
         0n
     );
     console.log(" data2 ", data2);

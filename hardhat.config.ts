@@ -2,7 +2,7 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import "@typechain/hardhat";
 import "@nomicfoundation/hardhat-network-helpers";
 import "@nomicfoundation/hardhat-ethers";
-
+import "hardhat-tracer";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "hardhat-deploy";
 import dotenv from "dotenv";

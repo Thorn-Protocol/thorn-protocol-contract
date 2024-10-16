@@ -39,6 +39,7 @@
         "hardhat-gas-reporter": "^2.2.1",
         "hardhat-interface-generator": "^0.0.6",
         "hardhat-spdx-license-identifier": "^2.3.1",
+        "hardhat-tracer": "^3.1.0",
         "lodash": "^4.17.21",
         "solc": "^0.8.27"
     }
