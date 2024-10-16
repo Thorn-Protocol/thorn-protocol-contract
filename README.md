@@ -10,8 +10,7 @@ $ npm install --save-dev --force
 
 ### Config url and ENVIRONMENT_VARIABLE in .env
 
--   Copy and update from .env_example_bsc_testnet for bsc testnet network
--   Copy and update from .env_example_oasis_sapphire_mainnet for sapphire oasis network
+Information about deployed smart contracts is located in the /deployments directory
 
 ## Table of contents
 

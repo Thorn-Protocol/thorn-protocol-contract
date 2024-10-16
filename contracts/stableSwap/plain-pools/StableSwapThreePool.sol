@@ -275,7 +275,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
             // Equality with the precision of 1
             if (D > Dprev) {
                 if (D - Dprev <= 1) {
-                    return D;  
+                    return D;
                 }
             } else {
                 if (Dprev - D <= 1) {
@@ -283,7 +283,7 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
                 }
             }
         }
-        revert("invariant calculation did not converge");   
+        revert("invariant calculation did not converge");
     }
 
     /**
@@ -514,7 +514,8 @@ contract StableSwapThreePool is Ownable, ReentrancyGuard {
                 }
             }
         }
-        return y;
+        revert("does not converge");
+        //return y;
     }
 
     function _calc_withdraw_one_coin(

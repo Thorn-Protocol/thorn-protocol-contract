@@ -40,7 +40,6 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         await execute("StableSwapLPFactory", { from: deployer, log: true }, "transferOwnership", receipt.address);
 
         const admin = await read("StableSwapFactory", "admin");
-        console.log("Admin:", admin);
     }
 };
 deploy.tags = ["two-pool-deployer"];

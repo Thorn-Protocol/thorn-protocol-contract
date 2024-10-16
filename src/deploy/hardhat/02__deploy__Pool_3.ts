@@ -36,7 +36,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
         // const LPEvent = receipt.events?.find((log) => log.event === "NewStableSwapLP");
         const info = await read("StableSwapFactory", "getThreePoolPairInfo", TKN1.address, TKN2.address);
-        console.log("LP Token:", info);
+        //    console.log("LP Token:", info);
 
         await save("Pool3", {
             address: info["swapContract"],

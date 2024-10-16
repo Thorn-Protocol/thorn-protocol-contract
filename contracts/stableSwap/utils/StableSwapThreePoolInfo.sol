@@ -25,7 +25,9 @@ contract StableSwapThreePoolInfo {
      * @notice Get the balances of each coin in the pool
      * @param _swap Address of the stable swap contract
      */
-    function balances(address _swap) public view returns (uint256[N_COINS] memory swapBalances) {
+    function balances(
+        address _swap
+    ) public view returns (uint256[N_COINS] memory swapBalances) {
         for (uint256 i = 0; i < N_COINS; i++) {
             swapBalances[i] = IStableSwap(_swap).balances(i);
         }
@@ -35,7 +37,9 @@ contract StableSwapThreePoolInfo {
      * @notice Get the exchange rates for each coin in the pool
      * @param _swap Address of the stable swap contract
      */
-    function RATES(address _swap) public view returns (uint256[N_COINS] memory swapRATES) {
+    function RATES(
+        address _swap
+    ) public view returns (uint256[N_COINS] memory swapRATES) {
         for (uint256 i = 0; i < N_COINS; i++) {
             swapRATES[i] = IStableSwap(_swap).RATES(i);
         }
@@ -45,33 +49,39 @@ contract StableSwapThreePoolInfo {
      * @notice Get the precision multipliers for each coin in the pool
      * @param _swap Address of the stable swap contract
      */
-    function PRECISION_MUL(address _swap) public view returns (uint256[N_COINS] memory swapPRECISION_MUL) {
+    function PRECISION_MUL(
+        address _swap
+    ) public view returns (uint256[N_COINS] memory swapPRECISION_MUL) {
         for (uint256 i = 0; i < N_COINS; i++) {
             swapPRECISION_MUL[i] = IStableSwap(_swap).PRECISION_MUL(i);
         }
     }
 
     /**
-     * @notice Calculate the amount of each coin received when removing liquidity 
+     * @notice Calculate the amount of each coin received when removing liquidity
      * @param _swap Address of the stable swap contract
      * @param _amount Amount of LP tokens to burn in the withdrawal
      */
-    function calc_coins_amount(address _swap, uint256 _amount) external view returns (uint256[N_COINS] memory) {
+    function calc_coins_amount(
+        address _swap,
+        uint256 _amount
+    ) external view returns (uint256[N_COINS] memory) {
         uint256 total_supply = token(_swap).totalSupply();
         uint256[N_COINS] memory amounts;
 
         for (uint256 i = 0; i < N_COINS; i++) {
-            uint256 value = (IStableSwap(_swap).balances(i) * _amount) / total_supply;
+            uint256 value = (IStableSwap(_swap).balances(i) * _amount) /
+                total_supply;
             amounts[i] = value;
         }
         return amounts;
     }
 
     /**
-    * @notice Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
-    * @param _balances Array of balances to calculate virtual balances from.
-    * @param amp Amplification factor of the pool.
-    */
+     * @notice Calculates the total value of the pool's assets (invariant D), given balances and amplification factor.
+     * @param _balances Array of balances to calculate virtual balances from.
+     * @param amp Amplification factor of the pool.
+     */
     function get_D_mem(
         address _swap,
         uint256[N_COINS] memory _balances,
@@ -85,11 +95,10 @@ contract StableSwapThreePoolInfo {
      * @param _swap Address of the stable swap contract
      * @param amounts Array of amounts for each coin being deposited
      */
-    function get_add_liquidity_mint_amount(address _swap, uint256[N_COINS] memory amounts)
-        external
-        view
-        returns (uint256)
-    {
+    function get_add_liquidity_mint_amount(
+        address _swap,
+        uint256[N_COINS] memory amounts
+    ) external view returns (uint256) {
         IStableSwap swap = IStableSwap(_swap);
         uint256[N_COINS] memory fees;
         uint256 _fee = (swap.fee() * N_COINS) / (4 * (N_COINS - 1));
@@ -102,7 +111,11 @@ contract StableSwapThreePoolInfo {
         if (token_supply > 0) {
             D0 = get_D_mem(_swap, old_balances, amp);
         }
-        uint256[N_COINS] memory new_balances = [old_balances[0], old_balances[1], old_balances[2]];
+        uint256[N_COINS] memory new_balances = [
+            old_balances[0],
+            old_balances[1],
+            old_balances[2]
+        ];
 
         for (uint256 i = 0; i < N_COINS; i++) {
             if (token_supply == 0) {
@@ -151,11 +164,10 @@ contract StableSwapThreePoolInfo {
      * @param _swap Address of the stable swap contract
      * @param amounts Array of amounts for each coin being deposited
      */
-    function get_add_liquidity_fee(address _swap, uint256[N_COINS] memory amounts)
-        external
-        view
-        returns (uint256[N_COINS] memory liquidityFee)
-    {
+    function get_add_liquidity_fee(
+        address _swap,
+        uint256[N_COINS] memory amounts
+    ) external view returns (uint256[N_COINS] memory liquidityFee) {
         IStableSwap swap = IStableSwap(_swap);
         uint256 _fee = (swap.fee() * N_COINS) / (4 * (N_COINS - 1));
         uint256 _admin_fee = swap.admin_fee();
@@ -168,7 +180,11 @@ contract StableSwapThreePoolInfo {
         if (token_supply > 0) {
             D0 = get_D_mem(_swap, old_balances, amp);
         }
-        uint256[N_COINS] memory new_balances = [old_balances[0], old_balances[1], old_balances[2]];
+        uint256[N_COINS] memory new_balances = [
+            old_balances[0],
+            old_balances[1],
+            old_balances[2]
+        ];
 
         for (uint256 i = 0; i < N_COINS; i++) {
             if (token_supply == 0) {
@@ -202,18 +218,21 @@ contract StableSwapThreePoolInfo {
      * @param _swap Address of the stable swap contract
      * @param amounts Array of amounts for each coin being withdrawn
      */
-    function get_remove_liquidity_imbalance_fee(address _swap, uint256[N_COINS] memory amounts)
-        external
-        view
-        returns (uint256[N_COINS] memory liquidityFee)
-    {
+    function get_remove_liquidity_imbalance_fee(
+        address _swap,
+        uint256[N_COINS] memory amounts
+    ) external view returns (uint256[N_COINS] memory liquidityFee) {
         IStableSwap swap = IStableSwap(_swap);
         uint256 _fee = (swap.fee() * N_COINS) / (4 * (N_COINS - 1));
         uint256 _admin_fee = swap.admin_fee();
         uint256 amp = swap.A();
 
         uint256[N_COINS] memory old_balances = balances(_swap);
-        uint256[N_COINS] memory new_balances = [old_balances[0], old_balances[1], old_balances[2]];
+        uint256[N_COINS] memory new_balances = [
+            old_balances[0],
+            old_balances[1],
+            old_balances[2]
+        ];
         uint256 D0 = get_D_mem(_swap, old_balances, amp);
         for (uint256 i = 0; i < N_COINS; i++) {
             new_balances[i] -= amounts[i];
@@ -234,14 +253,13 @@ contract StableSwapThreePoolInfo {
     }
 
     /**
-    * @notice Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
-    * @param _balances The array of balances to calculate virtual balances from.
-    */
-    function _xp_mem(address _swap, uint256[N_COINS] memory _balances)
-        public
-        view
-        returns (uint256[N_COINS] memory result)
-    {
+     * @notice Calculates the array of virtual balances for the pool, scaled by precision, using provided balances.
+     * @param _balances The array of balances to calculate virtual balances from.
+     */
+    function _xp_mem(
+        address _swap,
+        uint256[N_COINS] memory _balances
+    ) public view returns (uint256[N_COINS] memory result) {
         result = RATES(_swap);
         for (uint256 i = 0; i < N_COINS; i++) {
             result[i] = (result[i] * _balances[i]) / PRECISION;
@@ -249,12 +267,15 @@ contract StableSwapThreePoolInfo {
     }
 
     /**
-    * @notice Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
-    * @param xp Array of virtual balances for the pool, scaled by precision.
-    * @param amp Amplification factor of the pool.
-    * @return D The total value of the pool's assets (invariant D).
-    */
-    function get_D(uint256[N_COINS] memory xp, uint256 amp) internal pure returns (uint256) {
+     * @notice Calculates the total value of the pool's assets (invariant D), given virtual balances and amplification factor.
+     * @param xp Array of virtual balances for the pool, scaled by precision.
+     * @param amp Amplification factor of the pool.
+     * @return D The total value of the pool's assets (invariant D).
+     */
+    function get_D(
+        uint256[N_COINS] memory xp,
+        uint256 amp
+    ) internal pure returns (uint256) {
         uint256 S;
         for (uint256 i = 0; i < N_COINS; i++) {
             S += xp[i];
@@ -272,7 +293,9 @@ contract StableSwapThreePoolInfo {
                 D_P = (D_P * D) / (xp[k] * N_COINS); // If division by 0, this will be borked: only withdrawal will work. And that is good
             }
             Dprev = D;
-            D = ((Ann * S + D_P * N_COINS) * D) / ((Ann - 1) * D + (N_COINS + 1) * D_P);
+            D =
+                ((Ann * S + D_P * N_COINS) * D) /
+                ((Ann - 1) * D + (N_COINS + 1) * D_P);
             // Equality with the precision of 1
             if (D > Dprev) {
                 if (D - Dprev <= 1) {
@@ -288,12 +311,12 @@ contract StableSwapThreePoolInfo {
     }
 
     /**
-    * @notice Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
-    * @param i Index of coin to swap from.
-    * @param j Index of coin to swap to
-    * @param x Amount of coin i to swap
-    * @param xp_ The array of virtual balances for the pool, scaled by precision.
-    */
+     * @notice Get the amount of coin j one would receive for swapping x of coin i, using the current virtual balances.
+     * @param i Index of coin to swap from.
+     * @param j Index of coin to swap to
+     * @param x Amount of coin i to swap
+     * @param xp_ The array of virtual balances for the pool, scaled by precision.
+     */
     function get_y(
         address _swap,
         uint256 i,
@@ -343,14 +366,14 @@ contract StableSwapThreePoolInfo {
     }
 
     /**
-    * @notice Calculates the exchange fee and admin fee for a token swap
-    * @param _swap Address of the stable swap contract
-    * @param i Index of the token to swap from
-    * @param j Index of the token to swap to
-    * @param dx Amount of token to swap from
-    * @return exFee Exchange fee for the swap
-    * @return exAdminFee Admin fee for the swap
-    */
+     * @notice Calculates the exchange fee and admin fee for a token swap
+     * @param _swap Address of the stable swap contract
+     * @param i Index of the token to swap from
+     * @param j Index of the token to swap to
+     * @param dx Amount of token to swap from
+     * @return exFee Exchange fee for the swap
+     * @return exAdminFee Admin fee for the swap
+     */
     function get_exchange_fee(
         address _swap,
         uint256 i,
@@ -378,20 +401,24 @@ contract StableSwapThreePoolInfo {
     /**
      * @notice Calculates the array of virtual balances for the pool, scaled by precision
      */
-    function _xp(address _swap) internal view returns (uint256[N_COINS] memory result) {
+    function _xp(
+        address _swap
+    ) internal view returns (uint256[N_COINS] memory result) {
         result = RATES(_swap);
         for (uint256 i = 0; i < N_COINS; i++) {
-            result[i] = (result[i] * IStableSwap(_swap).balances(i)) / PRECISION;
+            result[i] =
+                (result[i] * IStableSwap(_swap).balances(i)) /
+                PRECISION;
         }
     }
 
     /**
-    * @notice Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
-    * @param A_ The value of parameter A.
-    * @param i The index of the coin for which the output amount is calculated.
-    * @param xp The array of virtual balances for the pool, scaled by precision.
-    * @param D The new value of invariant D.
-    */
+     * @notice Get the amount of coin i given a reduction in invariant D, considering a specific value of parameter A and current virtual balances.
+     * @param A_ The value of parameter A.
+     * @param i The index of the coin for which the output amount is calculated.
+     * @param xp The array of virtual balances for the pool, scaled by precision.
+     * @param D The new value of invariant D.
+     */
     function get_y_D(
         uint256 A_,
         uint256 i,
@@ -442,7 +469,8 @@ contract StableSwapThreePoolInfo {
                 }
             }
         }
-        return y;
+        revert("does not converge");
+        //return y;
     }
 
     /**
@@ -501,12 +529,12 @@ contract StableSwapThreePoolInfo {
     }
 
     /**
-     * @notice get amountIn  with the given amount out  
+     * @notice get amountIn  with the given amount out
      * @param _swap: Addresses of pool conracts .
      * @param i: the token index.
-     * @param j: the token index 
+     * @param j: the token index
      * @param  dy :  the given amount out
-     * @param max_dx: the maximum of amount in 
+     * @param max_dx: the maximum of amount in
      */
     function get_dx(
         address _swap,
@@ -519,7 +547,8 @@ contract StableSwapThreePoolInfo {
         uint256[N_COINS] memory old_balances = balances(_swap);
         uint256[N_COINS] memory xp = _xp_mem(_swap, old_balances);
 
-        uint256 dy_with_fee = (dy * FEE_DENOMINATOR) / (FEE_DENOMINATOR - swap.fee());
+        uint256 dy_with_fee = (dy * FEE_DENOMINATOR) /
+            (FEE_DENOMINATOR - swap.fee());
         require(dy_with_fee < old_balances[j], "Excess balance");
         uint256[N_COINS] memory rates = RATES(_swap);
         uint256 y = xp[j] - (dy_with_fee * rates[j]) / PRECISION;

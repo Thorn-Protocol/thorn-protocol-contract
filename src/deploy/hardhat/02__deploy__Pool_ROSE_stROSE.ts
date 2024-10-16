@@ -25,7 +25,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
             const info_pool = await read("StableSwapFactory", "getPairInfo", TOKEN_TESTNET.ROSE, stROSE.address);
             if (info_pool["swapContract"] == ZeroAddress) {
-                console.log("Deploying pool ROSE-stROSE");
+                //    console.log("Deploying pool ROSE-stROSE");
                 const A = 1000;
                 const Fee = 4000000;
                 const AdminFee = 5000000000;
@@ -40,7 +40,7 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                     AdminFee
                 );
                 const info_pool = await read("StableSwapFactory", "getPairInfo", TOKEN_TESTNET.ROSE, stROSE.address);
-                console.log("info_pool", info_pool);
+                //  console.log("info_pool", info_pool);
                 const singleton = await get("StableSwapTwoPool");
                 await save("pool_ROSE-stROSE", {
                     address: info_pool["swapContract"],

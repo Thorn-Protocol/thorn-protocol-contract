@@ -482,7 +482,8 @@ contract StableSwapTwoPool is Ownable, ReentrancyGuard {
                 }
             }
         }
-        return y;
+        revert("does not converge");
+        //return y;
     }
     
     function _calc_withdraw_one_coin(uint256 _token_amount, uint256 i) internal view returns (uint256, uint256) {
