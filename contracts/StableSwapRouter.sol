@@ -10,7 +10,6 @@ import "./libraries/SmartRouterHelper.sol";
 import "./libraries/Constants.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "hardhat/console.sol";
 
 /// @title Stable Swap Router
 /// @notice A router contract for excuting stable swaps between different stablecoins pairs through mutiple pools

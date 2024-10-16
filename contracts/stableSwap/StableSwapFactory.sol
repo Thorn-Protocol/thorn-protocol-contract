@@ -7,7 +7,6 @@ import "../interfaces/IStableSwapDeployer.sol";
 import "../interfaces/IStableSwapLPFactory.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "hardhat/console.sol";
 
 /**
  * @title Stable swap factory

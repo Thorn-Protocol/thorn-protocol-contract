@@ -8,8 +8,6 @@ import "./LowGasSafeMath.sol";
 import "./TransferHelper.sol";
 import "../interfaces/IStableSwap.sol";
 
-import "hardhat/console.sol";
-
 library SmartRouterHelper {
     using LowGasSafeMath for uint256;
 
@@ -23,9 +21,6 @@ library SmartRouterHelper {
         uint256 flag
     ) public view returns (uint256 i, uint256 j, address swapContract) {
         if (flag == 2) {
-            console.log("flag: %s", flag);
-            console.log("input %s", input);
-            console.log("output %s", output);
             IStableSwapFactory.StableSwapPairInfo
                 memory info = IStableSwapFactory(stableSwapFactory).getPairInfo(
                     input,
@@ -49,7 +44,6 @@ library SmartRouterHelper {
 
             swapContract = info.swapContract;
         }
-        console.log("swapContract: %s", swapContract);
 
         require(
             swapContract != address(0),
