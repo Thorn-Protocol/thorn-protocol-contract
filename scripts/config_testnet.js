@@ -15,7 +15,7 @@ export const listAddr = {
         StableSwapLPFactory: "0x779d19542BA8FCa29b848aD8B6a92D512052d8C4",
         StableSwapTwoPoolDeployer: "0xCD9C3eCB05e3dbdcDfF19C9a7765a7c65753Df52",
         StableSwapThreePoolDeployer: "0x20e9b35cE615FbA38340a93B2d69E106b736fa35",
-        StableSwapFactory: "0x10f5A4b5f18127993F5A129eB61F71A947cFf67F",
+        StableSwapFactory: "0x430e458d39154fFE80C1f305F8E6ACCE135A5116",
         StableSwapRouter: "0x32d5eCe97D58D80000Bf265A21fE2C5F80388551",
     },
 };
@@ -42,6 +42,32 @@ export const poolList = {
                 {
                     symbol: "stROSE",
                     address: "0xf001eb69fd0b4060db7397d70ec2edcd5d89cb27",
+                    decimals: 18,
+                },
+            ],
+            fee: 0.0004,
+            DAOFee: 0.0002,
+        },
+        {
+            type: 2,
+            tag: "USD",
+            name: "USDT-USDC",
+            code: "USDT USDC",
+            address: "0x16576Fa3F9CcfBb4EDB0ad1647120089323B49F1",
+            lpAddress: {
+                symbol: "Stable-LP",
+                address: "0xDa03cA7f93CDDcf20Dcf926a3Ad2b4E347087CdB",
+                decimals: 18,
+            },
+            underlyingTokens: [
+                {
+                    symbol: "USDC",
+                    address: "0x1DD8219c8A8f2fF453fd19F775e3dA8c0501E768",
+                    decimals: 18,
+                },
+                {
+                    symbol: "USDT",
+                    address: "0x9DA08dDBCB74e9BDf309C7fa94F3b7AFB3341EB2",
                     decimals: 18,
                 },
             ],

@@ -8,15 +8,15 @@ export const coins = [];
 
 export const listAddr = {
     [NETWORK.sapphireTestnet.chainId]: {
-        SmartRouterHelperLibrary: "0x68968cdE2fe5b61cEC87Ae6fdCB2fc39271893c2",
-        StableSwapInfo: "0xe50516bCC168B67b5391e15E877c6a4cc3e75f00",
-        StableSwapThreePoolInfo: "0xa8b20299608BB9fAf0b496Fba5cFEB14AD31DF59",
-        StableSwapTwoPoolInfo: "0x8d7Dcc3bFf324e2AFf9880F4B61e10daC9C18d26",
-        StableSwapLPFactory: "0x00Fc51De53DE96C7086b4df0AF810edE2776Fa98",
-        StableSwapTwoPoolDeployer: "0x20973dfFa9Ee32b03f4a5e3c5A686B48FF63b1B1",
-        StableSwapThreePoolDeployer: "0xcEbf9Ad6D3258A687F21398B05C0eCdcaF42ECcA",
-        StableSwapFactory: "0x888099De8EA8068D92bB04b47A743B82195c4aD2",
-        StableSwapRouter: "0xbfdcE45a9241870E7cF338BAaa3185972A550922",
+        SmartRouterHelperLibrary: "0x6ddBFDee4Fe0B1A3415C0cc309A335ad2475811c",
+        StableSwapInfo: "0x43BF204Eef9CD53dA4959A4E1b93937a530f54Ac",
+        StableSwapThreePoolInfo: "0x27b7158C6Ab336F8ed4B744Bc295a10194653846",
+        StableSwapTwoPoolInfo: "0xBb9ab25E81E4d6ba095dc278D244f38d7b1d4F05",
+        StableSwapLPFactory: "0x48bBC7Ecc6cDd7849072AAD8a31c602Bca58fD4C",
+        StableSwapTwoPoolDeployer: "0xB26C11691638b7F72C2fdCF3E337E21C6fa106Df",
+        StableSwapThreePoolDeployer: "0xeb1D0087dbc99B78ABEE509B35490e98De1CE1d0",
+        StableSwapFactory: "0x85E778c1Eeaee783E5f304F8cC8d82402490D2DB",
+        StableSwapRouter: "0x93Be1021366c15506C0c7daad550D2E4Ebc138a3",
     },
 };
 
@@ -27,10 +27,10 @@ export const poolList = {
             tag: "ROSE",
             name: "ROSE-stROSE",
             code: "ROSE stROSE",
-            address: "0x10fb422Ee1300C61F03EF70b573cc7439f2Af5Aa",
+            address: "0x52B0F01751a4fa76B6C847081cD7C1dcC34FF877",
             lpAddress: {
                 symbol: "Stable-LP",
-                address: "0x7cf09b3680EfFA5AB7D6b140387daf5c7A67EC53",
+                address: "0xd6fDdb88bB0f1317310E152A1065dCF2B6cdB0D2",
                 decimals: 18,
             },
             underlyingTokens: [

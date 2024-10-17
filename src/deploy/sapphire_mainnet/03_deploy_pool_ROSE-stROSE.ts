@@ -7,7 +7,7 @@ import { StableSwapFactory__factory } from "../../../typechain-types";
 
 const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts, getChainId } = hre;
-    const { deploy, get, getOrNull, execute, read, save } = deployments;
+    const { get, getOrNull, read, save, execute } = deployments;
     const { deployer } = await getNamedAccounts();
 
     if ((await getChainId()) === CHAIN_ID.OASIS_SAPPHIRE_MAINNET) {
@@ -26,14 +26,25 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 const Fee = 4000000;
                 const AdminFee = 5000000000;
 
-                const tx_non_signed = await factory.createSwapPair.populateTransaction(
+                // const tx_non_signed = await factory.createSwapPair.populateTransaction(
+                //     TOKEN_MAINNET.ROSE,
+                //     TOKEN_MAINNET.stROSE,
+                //     A,
+                //     Fee,
+                //     AdminFee
+                // );
+                // console.log("tx_non_signed", tx_non_signed);
+
+                await execute(
+                    "StableSwapFactory",
+                    { from: deployer, log: true, gasLimit: 10000000 },
+                    "createSwapPair",
                     TOKEN_MAINNET.ROSE,
                     TOKEN_MAINNET.stROSE,
                     A,
                     Fee,
                     AdminFee
                 );
-                console.log("tx_non_signed", tx_non_signed);
             } else {
                 console.log("Pool ROSE-stROSE already deployed at: ", info_pool["swapContract"]);
                 const singleton = await get("StableSwapTwoPool");

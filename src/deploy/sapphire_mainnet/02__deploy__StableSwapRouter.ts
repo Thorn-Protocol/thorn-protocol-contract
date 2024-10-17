@@ -25,12 +25,12 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                 },
             });
 
-            await execute(
-                "StableSwapRouter",
-                { from: deployer, log: true },
-                "transferOwnership",
-                ADMIN_WALLET.SAPPHIRE_MAINNET
-            );
+            // await execute(
+            //     "StableSwapRouter",
+            //     { from: deployer, log: true },
+            //     "transferOwnership",
+            //     ADMIN_WALLET.SAPPHIRE_MAINNET
+            // );
         }
     }
 };

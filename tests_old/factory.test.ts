@@ -1,13 +1,12 @@
+
+
 import hre, { ethers, network } from "hardhat";
-import {
-    StableSwapFactory,
-    StableSwapFactory__factory,
-    StableSwapLPFactory,
-    StableSwapLPFactory__factory,
-} from "../typechain-types";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { expect } from "chai";
+import { StableSwapFactory, StableSwapFactory__factory, StableSwapLPFactory, StableSwapLPFactory__factory } from "../typechain-types";
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
+import { expect } from 'chai';
 import { ZeroAddress } from "ethers";
+
+
 
 describe("Factory test", () => {
     if (network.config.chainId != 31337) {
@@ -25,8 +24,8 @@ describe("Factory test", () => {
     const AdminFee = 5000000000;
 
     const { deployments, getNamedAccounts } = hre;
-    const { get, execute, read } = deployments;
-    const provider = ethers.provider;
+    const { get, execute, read  } = deployments;
+    const provider  = ethers.provider;
 
     before(async () => {
         await deployments.fixture();
@@ -38,16 +37,20 @@ describe("Factory test", () => {
         lpFactory = StableSwapLPFactory__factory.connect(lpFactoryDeployment.address, provider);
         stableSwapFactory = StableSwapFactory__factory.connect(stableSwapFactoryDeployment.address, provider);
     });
-
+    
     it("revert when call initialize again", async () => {
-        await expect(
-            stableSwapFactory.connect(deployer).initialize(ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress)
-        ).to.be.revertedWith("Initializable: contract is already initialized");
+         await expect(
+             stableSwapFactory.connect(deployer).initialize(
+            ZeroAddress,ZeroAddress,ZeroAddress,ZeroAddress
+        )).to.be.revertedWith("Initializable: contract is already initialized");
     });
 
     it("revert create Swap Pair by not admin", async () => {
         await expect(
-            stableSwapFactory.connect(bob).createSwapPair(ZeroAddress, ZeroAddress, A, Fee, AdminFee)
-        ).to.be.revertedWith("Admin only");
+            stableSwapFactory.connect(bob).createSwapPair(
+                ZeroAddress,ZeroAddress,A,Fee,AdminFee
+            )).to.be.revertedWith("Admin only");
     });
-});
+    
+    
+})

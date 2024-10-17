@@ -49,19 +49,18 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             await execute("StableSwapLPFactory", { from: deployer, log: true }, "transferOwnership", receipt.address);
             const admin = await read("StableSwapFactory", "admin");
             console.log("Admin:", admin);
-
-            await execute(
-                "StableSwapFactory",
-                { from: deployer, log: true },
-                "transferOwnership",
-                ADMIN_WALLET.SAPPHIRE_MAINNET
-            );
-            await execute(
-                "StableSwapFactory",
-                { from: deployer, log: true },
-                "transferAdminship",
-                ADMIN_WALLET.SAPPHIRE_MAINNET
-            );
+            // await execute(
+            //     "StableSwapFactory",
+            //     { from: deployer, log: true },
+            //     "transferOwnership",
+            //     ADMIN_WALLET.SAPPHIRE_MAINNET
+            // );
+            // await execute(
+            //     "StableSwapFactory",
+            //     { from: deployer, log: true },
+            //     "transferAdminship",
+            //     ADMIN_WALLET.SAPPHIRE_MAINNET
+            // );
         } else {
             const admin = await read("StableSwapFactory", "admin");
             console.log("Admin:", admin);
