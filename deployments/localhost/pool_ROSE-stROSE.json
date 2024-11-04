@@ -1,5 +1,5 @@
 {
-  "address": "0x665B97F64B057989A28b7F35CA67B1Ee32AA5B77",
+  "address": "0xcdCD545Fe894D2A3983BE566E914Fee615d3662f",
   "abi": [
     {
       "inputs": [],
@@ -1196,8 +1196,5 @@
     }
   ],
   "numDeployments": 1,
-  "devdoc": {
-    "swapContract": "0x665B97F64B057989A28b7F35CA67B1Ee32AA5B77",
-    "token1": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
-  }
+  "userdoc": {}
 }

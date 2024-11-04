@@ -47,6 +47,8 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
                     abi: singleton.abi,
                     userdoc: {},
                 });
+
+                ROSE;
             }
         } else {
         }

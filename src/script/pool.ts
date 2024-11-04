@@ -1,6 +1,6 @@
 import hre from "hardhat";
 import { ERC20__factory, StableSwapFactory__factory, StableSwapTwoPool__factory } from "../../typechain-types";
-import { TOKEN_TESTNET } from "../config";
+import { TOKEN_MAINNET, TOKEN_TESTNET } from "../config";
 import { plainPools } from "../../typechain-types/contracts/stableSwap";
 import { formatEther, parseEther } from "ethers";
 
@@ -31,16 +31,16 @@ async function pool() {
 
     // const data = await read("pool_ROSE-stROSE", "support_ROSE");
     // console.log(" data ", data);
-    const stROSE = ERC20__factory.connect(TOKEN_TESTNET.stROSE, hre.ethers.provider);
-
+    // const stROSE = ERC20__factory.connect(TOKEN_MAINNET.stROSE, hre.ethers.provider);
     const poolAddress = (await get("pool_ROSE-stROSE")).address;
     const pool = StableSwapTwoPool__factory.connect(poolAddress, hre.ethers.provider);
-    const balance = await stROSE.balanceOf(deployer);
+    // const balance = await stROSE.balanceOf(deployer);
     let txRespone, txReceipt;
     const tokenLPAddress = await pool.token();
+    console.log("tokenLPAddress", tokenLPAddress);
     const tokenLP = ERC20__factory.connect(tokenLPAddress, hre.ethers.provider);
-    const balanceLP = await tokenLP.balanceOf(deployer);
-    console.log("balanceLP", balanceLP.toString());
+    const totalSupply = await tokenLP.totalSupply();
+    console.log("balanceLP", totalSupply.toString());
 
     const token1Address = await pool.coins(0);
     const token2Address = await pool.coins(1);
@@ -49,6 +49,10 @@ async function pool() {
     console.log("token2Address", token2Address);
     await info(token1Address, poolAddress);
     await info(token2Address, poolAddress);
+
+    const virutalPrice = await pool.get_virtual_price();
+
+    console.log("virutalPrice", formatEther(virutalPrice.toString()));
 }
 
 pool();

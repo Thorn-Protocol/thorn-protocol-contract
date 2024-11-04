@@ -13,11 +13,8 @@
     "@openzeppelin/contracts/utils/Context.sol": {
       "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v4.9.4) (utils/Context.sol)\n\npragma solidity ^0.8.0;\n\n/**\n * @dev Provides information about the current execution context, including the\n * sender of the transaction and its data. While these are generally available\n * via msg.sender and msg.data, they should not be accessed in such a direct\n * manner, since when dealing with meta-transactions the account sending and\n * paying for execution may not be the actual sender (as far as an application\n * is concerned).\n *\n * This contract is only required for intermediate, library-like contracts.\n */\nabstract contract Context {\n    function _msgSender() internal view virtual returns (address) {\n        return msg.sender;\n    }\n\n    function _msgData() internal view virtual returns (bytes calldata) {\n        return msg.data;\n    }\n\n    function _contextSuffixLength() internal view virtual returns (uint256) {\n        return 0;\n    }\n}\n"
     },
-    "contracts/mocks/USDC.sol": {
-      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.10;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract USDC is ERC20 {\n    constructor() ERC20(\"USDC\", \"USDC\") {}\n\n    function decimals() public pure override returns (uint8) {\n        return 6;\n    }\n\n    function mint(address _to, uint256 _amount) external {\n        _mint(_to, _amount);\n    }\n\n    function burnFrom(address _to, uint256 _amount) external {\n        _burn(_to, _amount);\n    }\n}\n"
-    },
-    "contracts/mocks/USDT.sol": {
-      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.10;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract USDT is ERC20 {\n    constructor() ERC20(\"USDT\", \"USDT\") {}\n\n    function decimals() public pure override returns (uint8) {\n        return 6;\n    }\n\n    function mint(address _to, uint256 _amount) external {\n        _mint(_to, _amount);\n    }\n\n    function burnFrom(address _to, uint256 _amount) external {\n        _burn(_to, _amount);\n    }\n}\n"
+    "contracts/mocks/stROSE.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.10;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract stROSE is ERC20 {\n    constructor() ERC20(\"stROSE\", \"stROSE\") {}\n\n    function mint(address _to, uint256 _amount) external {\n        _mint(_to, _amount);\n    }\n\n    function burnFrom(address _to, uint256 _amount) external {\n        _burn(_to, _amount);\n    }\n}\n"
     }
   },
   "settings": {

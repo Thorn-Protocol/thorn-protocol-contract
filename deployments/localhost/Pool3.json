@@ -1,5 +1,5 @@
 {
-  "address": "0x665B97F64B057989A28b7F35CA67B1Ee32AA5B77",
+  "address": "0xEd3b55FFC292b382EBE37fC4Cfc9F2c7Ac43bc80",
   "abi": [
     {
       "inputs": [],
@@ -17,15 +17,15 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "token_amounts",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "indexed": false,
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "fees",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "indexed": false,
@@ -160,15 +160,15 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "token_amounts",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "indexed": false,
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "fees",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "indexed": false,
@@ -191,15 +191,15 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "token_amounts",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "indexed": false,
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "fees",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "indexed": false,
@@ -565,9 +565,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "amounts",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "internalType": "uint256",
@@ -654,9 +654,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "amounts",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "internalType": "bool",
@@ -936,9 +936,9 @@
     {
       "inputs": [
         {
-          "internalType": "address[2]",
+          "internalType": "address[3]",
           "name": "_coins",
-          "type": "address[2]"
+          "type": "address[3]"
         },
         {
           "internalType": "uint256",
@@ -1056,9 +1056,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "min_amounts",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         }
       ],
       "name": "remove_liquidity",
@@ -1069,9 +1069,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint256[2]",
+          "internalType": "uint256[3]",
           "name": "amounts",
-          "type": "uint256[2]"
+          "type": "uint256[3]"
         },
         {
           "internalType": "uint256",
@@ -1197,7 +1197,8 @@
   ],
   "numDeployments": 1,
   "devdoc": {
-    "swapContract": "0x665B97F64B057989A28b7F35CA67B1Ee32AA5B77",
-    "token1": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
+    "swapContract": "0xEd3b55FFC292b382EBE37fC4Cfc9F2c7Ac43bc80",
+    "token1": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+    "token2": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
   }
 }
