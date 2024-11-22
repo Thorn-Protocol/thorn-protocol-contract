@@ -1,12 +1,26 @@
 import { HardhatUserConfig, task } from "hardhat/config";
-import "@typechain/hardhat";
 import "@nomicfoundation/hardhat-network-helpers";
 import "@nomicfoundation/hardhat-ethers";
-import "hardhat-tracer";
 import "@nomicfoundation/hardhat-chai-matchers";
+import "@typechain/hardhat";
+import "hardhat-tracer";
 import "hardhat-deploy";
 import dotenv from "dotenv";
 dotenv.config();
+import colors from "colors";
+
+colors.setTheme({
+    silly: "rainbow",
+    input: "grey",
+    verbose: "cyan",
+    prompt: "grey",
+    info: "green",
+    data: "grey",
+    help: "cyan",
+    warn: "yellow",
+    debug: "blue",
+    error: "red",
+});
 
 const TEST_HDWALLET = {
     mnemonic: "test test test test test test test test test test test junk",
