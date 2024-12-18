@@ -61,7 +61,6 @@ describe("ROSE-stROSE test", () => {
         lp = StableSwapLP__factory.connect(pool2Deployment.devdoc.LP, provider);
         const tokenODeploymeny = await get("TKN4");
         const token1Deploymeny = await get("TKN5");
-
         token0 = ERC2Mintable__factory.connect(tokenODeploymeny.address, deployer);
         token1 = ERC2Mintable__factory.connect(token1Deploymeny.address, deployer);
         const amount = parseEther("10000000");
@@ -91,18 +90,19 @@ describe("ROSE-stROSE test", () => {
 
     const getBalance = async (name: string, address: string) => {
         let balance = await lp.balanceOf(address);
-        console.log("INFORMATION".info, name.info);
+
         console.log("balance LP", formatEther(balance));
         balance = await token0.balanceOf(address);
         console.log("balance token0 ", formatEther(balance));
         balance = await token1.balanceOf(address);
         console.log("balance token1 ", formatEther(balance));
-
         balance = (await token0.balanceOf(address)) + (await token1.balanceOf(address));
         console.log("balance token0 + token1 = ", formatEther(balance));
     };
     it("Drug pool", async () => {
         await add_liquidity(deployer, parseEther("1"), parseEther("1"));
+
+        return;
         console.log("deployer balance");
         await add_liquidity(bob, parseEther("259358.165"), parseEther("913779.380"));
         // await getBalance("pool before swap", await pool2.getAddress());

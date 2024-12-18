@@ -6,6 +6,8 @@ import "@typechain/hardhat";
 import "hardhat-tracer";
 import "hardhat-deploy";
 import dotenv from "dotenv";
+import "@oasisprotocol/sapphire-paratime";
+import "@oasisprotocol/sapphire-hardhat";
 dotenv.config();
 import colors from "colors";
 

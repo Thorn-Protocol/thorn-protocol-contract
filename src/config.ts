@@ -12,4 +12,10 @@ export const TOKEN_MAINNET = {
     ROSE: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 
     stROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // https://accumulated.finance/stake/rose
+
+    bitUSD: "0xA14167756d9F86Aed12b472C29B257BBdD9974C2", // Bit Protocol USD
+
+    USDCe: "0x97eec1c29f745dC7c267F90292AA663d997a601D", // ROUTE USDC
+
+    USDT: "0x8C4aCd74Ff4385f3B7911432FA6787Aa14406f8B",
 };
