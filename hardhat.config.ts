@@ -74,6 +74,7 @@ const config: HardhatUserConfig = {
             tags: ["hardhat"],
             initialBaseFeePerGas: 100e9,
             saveDeployments: true,
+            deploy: ["src/deploy/hardhat"],
         },
         sapphire_mainnet: {
             url: "https://sapphire.oasis.io",
@@ -81,6 +82,7 @@ const config: HardhatUserConfig = {
             accounts,
             live: true,
             tags: ["sapphire-mainnet"],
+            deploy: ["src/deploy/sapphire_mainnet"],
         },
         sapphire_testnet: {
             url: "https://testnet.sapphire.oasis.io",
@@ -88,6 +90,7 @@ const config: HardhatUserConfig = {
             accounts,
             live: true,
             tags: ["sapphire-testnet"],
+            deploy: ["src/deploy/sapphire_testnet"],
         },
     },
 };

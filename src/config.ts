@@ -9,6 +9,8 @@ export const TOKEN_TESTNET = {
 };
 
 export const TOKEN_MAINNET = {
+    ThornUSD: "0x61Eef42555B856BcF0D29D6139c266276DEa493E",
+
     ROSE: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 
     stROSE: "0xed57966f1566de1a90042d07403021ea52ad4724", // https://accumulated.finance/stake/rose
