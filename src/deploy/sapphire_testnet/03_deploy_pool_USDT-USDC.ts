@@ -58,5 +58,5 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         }
     }
 };
-deploy.tags = ["USDT-USDC"];
+deploy.tags = ["thornUSD-USDT"];
 export default deploy;

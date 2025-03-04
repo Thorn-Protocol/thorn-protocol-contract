@@ -15,11 +15,11 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const USDT = TOKEN_MAINNET.USDT;
 
-    const info_pool = await read("StableSwapFactory", "getPairInfo", thornUSD, USDT);
+    let info_pool = await read("StableSwapFactory", "getPairInfo", thornUSD, USDT);
 
     if (info_pool["swapContract"] == ZeroAddress) {
-        const poolAddress = "0xf2f6270c24ca55251E68897DE4Fadf48C9221795";
-
+        const poolAddress = "0x97CfAB3b6B503aC5251FFb6d8182F4A3cbb27Ea9";
+        console.log(" adding pair ");
         await execute(
             "StableSwapFactory",
             { from: deployer, log: true, gasLimit: 10000000 },
@@ -28,7 +28,8 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         );
 
         const singleton = await get("StableSwapTwoPool");
-
+        let info_pool = await read("StableSwapFactory", "getPairInfo", thornUSD, USDT);
+        console.log("info_pool", info_pool);
         await save("pool_ThornUSD-USDT", {
             address: info_pool["swapContract"],
             abi: singleton.abi,

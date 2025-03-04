@@ -6,10 +6,13 @@ export const ADMIN_WALLET = {
 export const TOKEN_TESTNET = {
     ROSE: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     stROSE: "0xf001eb69fd0b4060db7397d70ec2edcd5d89cb27",
+    USDT: "0x9DA08dDBCB74e9BDf309C7fa94F3b7AFB3341EB2",
+    thornUSD: "0x1EE4aa1EaF6b2142105f517D43BAAADFd6864Ea7",
+    USDC: "0x1DD8219c8A8f2fF453fd19F775e3dA8c0501E768",
 };
 
 export const TOKEN_MAINNET = {
-    ThornUSD: "0x61Eef42555B856BcF0D29D6139c266276DEa493E",
+    ThornUSD: "0x5433c1ba69Afea50F602bdDe869e4bF4330F50F7",
 
     ROSE: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 

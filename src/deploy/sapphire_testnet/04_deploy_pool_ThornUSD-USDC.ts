@@ -1,9 +1,8 @@
-import { TOKEN_TESTNET } from "./../../config";
 import { USDC } from "./../../../typechain-types/contracts/mocks/USDC";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { CHAIN_ID } from "../../utils/network";
-import { ADMIN_WALLET, TOKEN_MAINNET } from "../../config";
+import { ADMIN_WALLET, TOKEN_MAINNET, TOKEN_TESTNET } from "../../config";
 import { ZeroAddress } from "ethers";
 import { StableSwapFactory__factory } from "../../../typechain-types";
 
@@ -14,27 +13,32 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const thornUSD = TOKEN_TESTNET.thornUSD;
 
-    const USDT = TOKEN_TESTNET.USDT;
+    const USDC = TOKEN_TESTNET.USDC;
     const factoryDeploy = await get("StableSwapFactory");
     const factory = StableSwapFactory__factory.connect(factoryDeploy.address, hre.ethers.provider);
-    let info_pool = await read("StableSwapFactory", "getPairInfo", thornUSD, USDT);
+    let info_pool = await read("StableSwapFactory", "getPairInfo", thornUSD, USDC);
 
     if (info_pool["swapContract"] == ZeroAddress) {
-        const poolAddress = "0x6E6D78390Cb1d65B1c659AE7775e135635bb0c27";
+        const poolAddress = "0x052344421E9A4adC221Bc25a352ca81b75Af8828";
         console.log(" adding pair ");
+
         let txPopulate = await factory.addPairInfo.populateTransaction(poolAddress);
         console.log("txPopulate", txPopulate);
-
+        // await execute(
+        //     "StableSwapFactory",
+        //     { from: deployer, log: true, gasLimit: 10000000 },
+        //     "addPairInfo",
+        //     poolAddress
+        // );
         // const singleton = await get("StableSwapTwoPool");
-        // let info_pool = await read("StableSwapFactory", "getPairInfo", thornUSD, USDT);
-        // console.log("info_pool", info_pool);
-        // await save("pool_ThornUSD-USDT", {
+        // let info_pool = await read("StableSwapFactory", "getPairInfo", thornUSD, USDC);
+        // await save("pool_ThornUSD-USDC", {
         //     address: info_pool["swapContract"],
         //     abi: singleton.abi,
         //     userdoc: {},
         // });
     }
 };
-deploy.tags = ["ThornUSD-USDT"];
+deploy.tags = ["ThornUSD-USDC"];
 
 export default deploy;
