@@ -1,4 +1,4 @@
-import { StableSwapTwoPool__factory } from "./../../typechain-types/factories/contracts/stableSwap/plain-pools/StableSwapTwoPool__factory";
+import { StableSwapTwoPool__factory } from "../../../typechain-types/factories/contracts/stableSwap/plain-pools/StableSwapTwoPool__factory";
 import hre from "hardhat";
 
 async function change_A() {
